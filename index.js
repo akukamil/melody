@@ -1293,7 +1293,7 @@ function load_resources() {
 	gres=game_res.resources;
 	
 	git_src="https://akukamil.github.io/melody/"
-	//git_src=""
+	git_src=""
 	
 
 	
@@ -1448,8 +1448,12 @@ l_board={
 	init(song_name){
 		
 		this.start_filled=0;
-		if(my_data.rating<10)
-			this.start_filled=3;
+		if(my_data.rating<10){
+			this.start_filled=3;			
+			if(song_name.length<5)
+				this.start_filled=1;
+		}
+
 		
 		const words=song_name.split(' ');
 		const num_of_words=words.length;
@@ -1962,10 +1966,7 @@ game = {
 		objects.progress_bar.width=450*(24-sec_play)/24;
 		if(objects.progress_bar.width<=0.211)
 			this.stop_song('NO_ANSWER');
-		
-		
 
-		
 	},
 		
 	async stop_song(res){

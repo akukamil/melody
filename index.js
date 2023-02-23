@@ -1297,7 +1297,7 @@ function load_resources() {
 	//короткая ссылка на ресурсы
 	gres=game_res.resources;
 	
-	let git_src="https://akukamil.github.io/melody/"
+	git_src="https://akukamil.github.io/melody/"
 	//git_src=""
 	
 

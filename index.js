@@ -585,24 +585,86 @@ keyboard={
 		
 }
 
-show_ad=function(){
-		
-	if (game_platform==="YANDEX") {			
-		//показываем рекламу
-		window.ysdk.adv.showFullscreenAdv({
-		  callbacks: {
-			onClose: function() {}, 
-			onError: function() {}
-					}
-		})
-	}
+ad = {
 	
-	if (game_platform==="VK") {
-				 
-		vkBridge.send("VKWebAppShowNativeAds", {ad_format:"interstitial"})
-		.then(data => console.log(data.result))
-		.catch(error => console.log(error));	
-	}		
+	prv_show : -9999,
+		
+	show : function() {
+		
+		if ((Date.now() - this.prv_show) < 100000 )
+			return false;
+		this.prv_show = Date.now();
+		
+		if (game_platform==='YANDEX') {			
+			//показываем рекламу
+			window.ysdk.adv.showFullscreenAdv({
+			  callbacks: {
+				onClose: function() {}, 
+				onError: function() {}
+						}
+			})
+		}
+		
+		if (game_platform==='VK') {
+					 
+			vkBridge.send("VKWebAppShowNativeAds", {ad_format:"interstitial"})
+			.then(data => console.log(data.result))
+			.catch(error => console.log(error));	
+		}			
+		
+		if (game_platform==='CRAZYGAMES') {				
+			try {
+				const crazysdk = window.CrazyGames.CrazySDK.getInstance();
+				crazysdk.init();
+				crazysdk.requestAd('midgame');		
+			} catch (e) {			
+				console.error(e);
+			}	
+		}	
+		
+		if (game_platform==='GM') {
+			sdk.showBanner();
+		}
+		return true;
+	},
+	
+	show2 : async function() {
+		
+		
+		if (game_platform ==="YANDEX") {
+			
+			let res = await new Promise(function(resolve, reject){				
+				window.ysdk.adv.showRewardedVideo({
+						callbacks: {
+						  onOpen: () => {},
+						  onRewarded: () => {resolve('ok')},
+						  onClose: () => {resolve('err')}, 
+						  onError: (e) => {resolve('err')}
+					}
+				})
+			
+			})
+			return res;
+		}
+		
+		if (game_platform === "VK") {	
+
+			let res = '';
+			try {
+				res = await vkBridge.send("VKWebAppShowNativeAds", { ad_format: "reward" })
+			}
+			catch(error) {
+				res ='err';
+			}
+			
+			return res;				
+			
+		}	
+		
+		return 'err';
+		
+	}
+
 }
 
 function vis_change() {
@@ -1984,6 +2046,9 @@ game = {
 		objects.correct_song.text=this.song_obj.song;
 		anim2.add(objects.correct_song_name_cont,{y:[100,0]}, true, 0.5,'easeOutBack');
 		
+		//показываем рекламу
+		ad.show();
+		
 		if(res==='MY_WIN'){
 			
 			sound.play('applause');		
@@ -2008,6 +2073,9 @@ game = {
 		this.on=false;
 		
 		anim2.add(objects.correct_song_name_cont,{y:[0,100]}, false, 0.5,'easeInBack');
+		
+		
+
 		
 		if(return_tocken) return;		
 		

@@ -1356,15 +1356,15 @@ function load_resources() {
 
 }
 
-var now, then=Date.now(), elapsed;
+var now, then=Date.now(), elapsed,time_per_frame=1000/65;
 function main_loop() {
 
 	now = Date.now();
 	elapsed = now-then;
 	
-    if (elapsed > 10) {
+    if (elapsed > time_per_frame) {
 		
-		then = now - (elapsed % 10);
+		then = now;
 		
 		game_tick+=0.016666666;
 		anim2.process();
@@ -1966,7 +1966,8 @@ game = {
 	
 		
 		objects.big_record_bcg.alpha=Math.abs(Math.sin(game_tick));	
-		objects.progress_bar.width-=0.25;
+		const sec_play=(Date.now()-this.play_start)*0.001;
+		objects.progress_bar.width=450*(24-sec_play)/24;
 		if(objects.progress_bar.width<=0.211)
 			this.stop_song('NO_ANSWER');
 		

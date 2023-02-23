@@ -2080,6 +2080,7 @@ game = {
 		
 		keyboard.open();
 		anim2.add(objects.big_record_cont,{x:[-450, objects.big_record_cont.sx]}, true, 1,'easeOutBack');
+		anim2.add(objects.close_game,{x:[450, objects.close_game.sx]}, true, 1,'easeOutBack');
 		
 		objects.progress_bar.x=0;
 		anim2.add(objects.progress_bar,{alpha:[0, 1]}, true, 1,'linear');

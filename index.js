@@ -289,16 +289,6 @@ class lb_player_card_class extends PIXI.Container{
 	
 }
 
-function awaiter(resolver){	
-
-	resolver={sdfds:3}
-	return new Promise((resolve, reject) => {
-			resolver = resolve;
-			setTimeout(resolve, 5000)
-		}
-	);
-}
-
 class acard_class extends PIXI.Container {
 		
 	constructor(x,y) {
@@ -1793,7 +1783,7 @@ game = {
 		
 		this.time_left--;
 		objects.time_left.text=this.time_left;
-		const cat_list=['cat197x','cat198x','cat199x','cat200x','cat201x','cat202x'];
+		const cat_list=['cat200x','cat201x','cat202x'];
 		if(this.time_left===0) {
 			this.select_cat(cat_list[irnd(0,cat_list.length-1)])			
 		}

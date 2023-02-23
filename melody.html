@@ -95,7 +95,7 @@
 		
 			players_table.innerHTML='';
 			var data=snapshot.val();
-			data = Object.keys(data).map((key) => [key, data[key].name,data[key].record,data[key].tm,new Date(data[key].tm).toLocaleString()]);
+			data = Object.keys(data).map((key) => [key, data[key].name,data[key].rating,data[key].tm,new Date(data[key].tm).toLocaleString()]);
 			data = data.filter(function (e) {
 			  return e[4]!==undefined;
 			});

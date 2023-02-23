@@ -1930,9 +1930,7 @@ game = {
 	},
 		
 	check_song(){
-		
-		
-		
+						
 		if(return_tocken || !this.on) return;
 				
 		if(this.cur_song_name.replace(/\s/g, '')===l_board.get_song_name()){						
@@ -2037,6 +2035,7 @@ game = {
 		
 		if(this.song_sound && this.song_sound.isPlaying)
 			this.song_sound.stop();
+		this.on=false;
 						
 		anim2.add(objects.progress_bar,{x:[0, -450]}, false, 1,'linear');		
 		anim2.add(objects.big_record_cont,{x:[objects.big_record_cont.sx,900]}, false, 1,'easeInBack');
@@ -2070,7 +2069,7 @@ game = {
 			
 		}		
 		
-		this.on=false;
+		
 		
 		anim2.add(objects.correct_song_name_cont,{y:[0,100]}, false, 0.5,'easeInBack');
 		

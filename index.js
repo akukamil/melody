@@ -542,6 +542,7 @@ keyboard={
 		
 		
 		if (result === undefined) return;
+		sound.play('keypress');
 		this.pointerdown(null,result)
 		
 	},
@@ -1315,6 +1316,7 @@ function load_resources() {
 	game_res.add('wrong',git_src+'sounds/wrong.mp3');
 	game_res.add('opponent_win',git_src+'sounds/opponent_win.mp3');
 	game_res.add('player_found',git_src+'sounds/player_found.mp3');
+	game_res.add('keypress',git_src+'sounds/keypress.mp3');
 	
     //добавляем из листа загрузки
     for (var i = 0; i < load_list.length; i++) {

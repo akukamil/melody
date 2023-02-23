@@ -1199,8 +1199,10 @@ async function init_game_env() {
 	document.getElementById("m_bar").outerHTML = "";
     document.getElementById("m_progress").outerHTML = "";
 		
-    app = new PIXI.Application({width: M_WIDTH, height: M_HEIGHT, antialias: false, forceCanvas: false, backgroundAlpha:0.5});
-    document.body.appendChild(app.view);
+	//создаем приложение пикси и добавляем тень
+	app.stage = new PIXI.Container();
+	app.renderer = new PIXI.Renderer({width:M_WIDTH, height:M_HEIGHT,antialias:true});
+	document.body.appendChild(app.renderer.view).style["boxShadow"] = "0 0 15px #000000";
 
     var resize = function () {
         const vpw = window.innerWidth; // Width of the viewport

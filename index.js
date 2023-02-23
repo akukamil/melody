@@ -1830,7 +1830,7 @@ game = {
 		anim2.add(objects.choose_cat_header,{scale_y:[0, 0.666]}, true, 0.5,'linear');
 		anim2.add(objects.cat_buttons_cont,{x:[450, 0]}, true, 0.5,'linear');
 						
-		this.time_left=5;
+		this.time_left=8;
 		objects.time_left.text=this.time_left;
 		this.timer=setInterval(game.time_tick.bind(game), 1000);
 		

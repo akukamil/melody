@@ -1293,7 +1293,7 @@ function load_resources() {
 	gres=game_res.resources;
 	
 	git_src="https://akukamil.github.io/melody/"
-	git_src=""
+	//git_src=""
 	
 
 	

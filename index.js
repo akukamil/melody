@@ -998,7 +998,9 @@ async function load_user_data() {
 
 		//устанавливаем рейтинг в попап
 		objects.id_record.text=objects.player0.star_count.text=my_data.rating;
+		objects.player0.name.text=my_data.name;
 
+		
 		//обновляем почтовый ящик
 		//firebase.database().ref("inbox/"+my_data.uid).set({sender:"-",message:"-",tm:"-",data:{x1:0,y1:0,x2:0,y2:0,board_state:0}});
 

@@ -608,7 +608,7 @@ ad = {
 		
 		if (game_platform==='VK') {
 					 
-			vkBridge.send("VKWebAppShowNativeAds", {ad_format:"interstitial"})
+			vkBridge.send("VKWebAppShowBannerAd", {banner_location: 'top'})
 			.then(data => console.log(data.result))
 			.catch(error => console.log(error));	
 		}			

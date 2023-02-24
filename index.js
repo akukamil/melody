@@ -44,6 +44,7 @@ var anim2 = {
 				let s=this.slot[i];
 				s.obj.ready=true;					
 				s.p_resolve('OK');
+				this.slot[i]=null;
 			}
 		}
 		

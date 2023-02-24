@@ -608,7 +608,7 @@ ad = {
 		
 		if (game_platform==='VK') {
 					 
-			vkBridge.send("VKWebAppShowBannerAd", {banner_location: 'top',layout_type:'overlay'})
+			vkBridge.send("VKWebAppShowNativeAds", {ad_format:"interstitial"})
 			.then(data => console.log(data.result))
 			.catch(error => console.log(error));	
 		}			
@@ -1337,6 +1337,8 @@ async function init_game_env() {
             break;
         }
     }
+			
+	ad.prv_show = Date.now();
 			
 	//загружаем данные об игроке
 	load_user_data();

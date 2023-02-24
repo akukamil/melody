@@ -1619,7 +1619,7 @@ main_menu = {
 		
 		
 		
-	}
+	},
 	
 	process(){
 		

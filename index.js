@@ -608,7 +608,11 @@ ad = {
 		
 		if (game_platform==='VK') {
 					 
-			vkBridge.send("VKWebAppShowNativeAds", {ad_format:"interstitial"})
+			/*vkBridge.send("VKWebAppShowNativeAds", {ad_format:"interstitial"})
+			.then(data => console.log(data.result))
+			.catch(error => console.log(error));*/	
+			
+			vkBridge.send('VKWebAppShowBannerAd', {layout_type:"overlay"})
 			.then(data => console.log(data.result))
 			.catch(error => console.log(error));	
 		}			
@@ -1608,6 +1612,14 @@ main_menu = {
 		search_menu.activate();
 		
 	},
+	
+	rules_button_down(){
+		
+		
+		
+		
+		
+	}
 	
 	process(){
 		

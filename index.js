@@ -1621,6 +1621,12 @@ main_menu = {
 		
 	},
 	
+	lb_down(){
+
+		
+		
+	},
+	
 	process(){
 		
 		objects.header0.rotation=Math.sin(game_tick)*0.2;
@@ -1724,10 +1730,12 @@ search_menu={
 		
 		if(return_tocken) return;
 		
+		player_obj.cacheAsBitmap=false;
 		player_obj.ind=fp_ind;
 		player_obj.avatar.texture=loader.resources[fp_ind].texture;
 		player_obj.name.text=fp_fb_data.name;
 		player_obj.star_count.text=fp_fb_data.rating;
+		player_obj.cacheAsBitmap=true;
 		anim2.add(player_obj,{y:[-180, player_obj.sy]}, true, 0.5,'easeOutBack');
 		sound.play('player_found');
 		
@@ -2034,7 +2042,6 @@ game = {
 			this.add_flying_notes();		
 			
 		}
-	
 		
 		objects.big_record_bcg.alpha=Math.abs(Math.sin(game_tick));	
 		const sec_play=(Date.now()-this.play_start)*0.001;

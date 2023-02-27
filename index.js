@@ -1858,8 +1858,7 @@ game = {
 			this.replace_some_player();
 							
 		//смотря кто выбирает
-		if(my_choose){
-			
+		if(my_choose){			
 			
 			objects.cat_buttons_cont.alpha=1;
 			objects.choose_cat_header.texture=gres.choose_cat_header.texture;			
@@ -1899,7 +1898,7 @@ game = {
 		
 		//это выбирает фейковый игрок
 		if (my_choose===false){
-			if(this.time_left<3) {
+			if(this.time_left<irnd(3,7)) {
 				this.select_cat(cat_list[irnd(0,cat_list.length-1)])			
 			}
 		}

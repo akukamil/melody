@@ -1,5 +1,5 @@
 var M_WIDTH = 450, M_HEIGHT = 800, game_platform="", app ={stage:{},renderer:{}}, gres, objects = {}, my_data = {}, game_tick = 0, state ="",git_src='';
-var some_process = {}, my_choose=false, return_tocken=false;
+var some_process = {}, my_choose=false, return_tocken=false, hidden_state_start=0;
 
 rnd2=function(min,max) {	
 	let r=Math.random() * (max - min) + min
@@ -25,7 +25,7 @@ var anim2 = {
 		
 	slot: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
 	
-	any_on : function() {
+	any_on() {
 		
 		for (let s of this.slot)
 			if (s !== null)
@@ -33,11 +33,11 @@ var anim2 = {
 		return false;		
 	},
 	
-	linear: function(x) {
+	linear(x) {
 		return x
 	},
 	
-	kill_all:function(){
+	kill_all(){
 		
 		for (var i = 0; i < this.slot.length; i++){
 			if (this.slot[i] !== null) {
@@ -50,7 +50,7 @@ var anim2 = {
 		
 	},
 	
-	kill_anim: function(obj) {
+	kill_anim(obj) {
 		
 		for (var i=0;i<this.slot.length;i++){
 			if (this.slot[i]!==null){
@@ -64,11 +64,11 @@ var anim2 = {
 	
 	},
 	
-	easeOutBack: function(x) {
+	easeOutBack(x) {
 		return 1 + this.c3 * Math.pow(x - 1, 3) + this.c1 * Math.pow(x - 1, 2);
 	},
 	
-	easeOutElastic: function(x) {
+	easeOutElastic(x) {
 		return x === 0
 			? 0
 			: x === 1
@@ -76,23 +76,23 @@ var anim2 = {
 			: Math.pow(2, -10 * x) * Math.sin((x * 10 - 0.75) * this.c4) + 1;
 	},
 	
-	easeOutSine: function(x) {
+	easeOutSine(x) {
 		return Math.sin( x * Math.PI * 0.5);
 	},
 	
-	easeOutCubic: function(x) {
+	easeOutCubic(x) {
 		return 1 - Math.pow(1 - x, 3);
 	},
 	
-	easeInBack: function(x) {
+	easeInBack(x) {
 		return this.c3 * x * x * x - this.c1 * x * x;
 	},
 	
-	easeInQuad: function(x) {
+	easeInQuad(x) {
 		return x * x;
 	},
 	
-	easeOutBounce: function(x) {
+	easeOutBounce(x) {
 		const n1 = 7.5625;
 		const d1 = 2.75;
 
@@ -107,20 +107,20 @@ var anim2 = {
 		}
 	},
 	
-	easeInCubic: function(x) {
+	easeInCubic(x) {
 		return x * x * x;
 	},
 	
-	ease2back : function(x) {
+	ease2back(x) {
 		return Math.sin(x*Math.PI*2);
 	},
 	
-	easeInOutCubic: function(x) {
+	easeInOutCubic(x) {
 		
 		return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
 	},
 	
-	easeBridge: function(x){
+	easeBridge(x){
 		
 		if(x<0.154)
 			return 1.2-Math.pow(x*10-1.095445,2);
@@ -129,14 +129,14 @@ var anim2 = {
 		return 1		
 	},
 		
-	shake : function(x) {
+	shake(x) {
 		
 		return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
 		
 		
 	},	
 	
-	add : function(obj, params, vis_on_end, time, func, anim3_origin) {
+	add(obj, params, vis_on_end, time, func) {
 				
 		//если уже идет анимация данного спрайта то отменяем ее
 		anim2.kill_anim(obj);
@@ -197,12 +197,16 @@ var anim2 = {
 			
 		}
 
-		
-		
-
 	},	
 	
-	process: function () {
+	add_waiter(time){
+		
+		this.add(this.empty_spr,{x:[0,1]},false,time,'linear');
+		
+	},
+	
+	
+	process () {
 		
 		for (var i = 0; i < this.slot.length; i++)
 		{
@@ -262,8 +266,10 @@ class lb_player_card_class extends PIXI.Container{
 		this.bcg.interactive=true;
 		this.bcg.pointerover=function(){this.tint=0x55ffff};
 		this.bcg.pointerout=function(){this.tint=0xffffff};
+		this.bcg.width=410;
+		this.bcg.height=70;
 						
-		this.place=new PIXI.BitmapText("1", {fontName: 'Century Gothic', fontSize: 24});
+		this.place=new PIXI.BitmapText("1", {fontName: 'mfont', fontSize: 24});
 		this.place.x=20;
 		this.place.y=20;
 		this.place.tint=0x220022;
@@ -273,16 +279,17 @@ class lb_player_card_class extends PIXI.Container{
 		this.avatar.y=10;
 		this.avatar.width=this.avatar.height=48;
 				
-		this.name=new PIXI.BitmapText(' ', {fontName: 'Century Gothic', fontSize: 25});
+		this.name=new PIXI.BitmapText(' ', {fontName: 'mfont', fontSize: 25});
 		this.name.x=100;
 		this.name.y=20;
 		this.name.tint=0x002222;
 		
 	
-		this.record=new PIXI.BitmapText(' ', {fontName: 'Century Gothic', fontSize: 30});
-		this.record.x=340;
+		this.record=new PIXI.BitmapText(' ', {fontName: 'mfont', fontSize: 20});
+		this.record.x=367;
 		this.record.tint=0x002222;
-		this.record.y=20;		
+		this.record.y=35;		
+		this.record.anchor.set(0.5,0.5);
 		
 		this.addChild(this.bcg,this.place, this.avatar, this.name, this.record);		
 	}
@@ -300,8 +307,14 @@ class acard_class extends PIXI.Container {
 		this.amask=new PIXI.Sprite(gres.avatar_mask.texture);
 		this.avatar=new PIXI.Sprite();
 		this.avatar.mask=this.amask;
+		
+		this.avatar_and_mask=new PIXI.Container();
+		this.avatar_and_mask.addChild(this.amask,this.avatar)
+		
+		
 		this.frame=new PIXI.Sprite(gres.avatar_frame.texture);
-		this.res_icon=new PIXI.Sprite();
+		
+		this.res_icon=new PIXI.Sprite(gres.cor_img.texture);
 		this.res_icon.width=this.res_icon.height=50;
 		this.res_icon.visible=false;
 		this.res_icon.x=this.res_icon.y=93;
@@ -321,7 +334,6 @@ class acard_class extends PIXI.Container {
 		this.star_bcg.scale_xy=0.5;
 
 
-
 		this.star_count=new PIXI.BitmapText('125', {fontName: 'mfont', fontSize :20, align: 'center'});
 		this.star_count.anchor.set(0.5,0.5);
 		this.star_count.x=this.star_count.y=20;
@@ -333,13 +345,11 @@ class acard_class extends PIXI.Container {
 		this.star_count_change.y=-5;
 		this.star_count_change.tint=0xFFFF00;
 		this.star_count_change.visible=false;
-		
-		
-		
+				
 		this.amask.width=this.avatar.width=this.frame.width=120;
 		this.amask.height=this.avatar.height=this.frame.height=120;
 		
-		this.addChild(this.amask,this.avatar,this.frame,this.name,this.res_icon,this.star_bcg,this.star_count,this.star_count_change);
+		this.addChild(this.avatar_and_mask,this.frame,this.name,this.res_icon,this.star_bcg,this.star_count,this.star_count_change);
 		
 		this.x=this.sx=x;
 		this.y=this.sy=y;
@@ -608,13 +618,10 @@ ad = {
 		
 		if (game_platform==='VK') {
 					 
-			/*vkBridge.send("VKWebAppShowNativeAds", {ad_format:"interstitial"})
+			vkBridge.send("VKWebAppShowNativeAds", {ad_format:"interstitial"})
 			.then(data => console.log(data.result))
-			.catch(error => console.log(error));*/	
-			
-			vkBridge.send('VKWebAppShowBannerAd', {layout_type:"overlay"})
-			.then(data => console.log(data.result))
-			.catch(error => console.log(error));	
+			.catch(error => console.log(error));
+
 		}			
 		
 		if (game_platform==='CRAZYGAMES') {				
@@ -675,8 +682,15 @@ ad = {
 function vis_change() {
 	
 	if (document.hidden===true) {
-		break_to_main_menu();
+		game.mute_song();
+		hidden_state_start=Date.now();
 	}	
+
+	if (document.hidden===false) {
+		if(Date.now()-hidden_state_start>7000)
+			break_to_main_menu();
+	}	
+	
 }
 
 auth2 = {
@@ -862,10 +876,9 @@ var lb={
 	cards_pos: [[20,300],[20,355],[20,410],[20,465],[20,520],[20,575],[20,630]],
 	
 	activate: function() {
-			
-		
+					
 	
-		anim2.add(objects.lb_cards_cont,{x:[450, 0]}, true, 0.03,'linear');
+		anim2.add(objects.lb_cards_cont,{x:[450, 0]}, true, 0.3,'linear');
 		
 		objects.lb_cards_cont.visible=true;
 		objects.lb_back_button.visible=true;
@@ -882,7 +895,7 @@ var lb={
 	close: function() {
 							
 			
-				
+		objects.lb_back_button.visible=false;
 		anim2.add(objects.lb_1_cont,{x:[objects.lb_1_cont.x, -450]}, false, 0.03,'linear');
 		anim2.add(objects.lb_2_cont,{x:[objects.lb_2_cont.x, -450]}, false, 0.03,'linear');
 		anim2.add(objects.lb_3_cont,{x:[objects.lb_3_cont.x, -450]}, false, 0.03,'linear');
@@ -904,7 +917,7 @@ var lb={
 	
 	back_button_down: function() {
 		
-		if (any_dialog_active===1 || objects.lb_1_cont.ready===false) {
+		if (objects.lb_1_cont.ready===false) {
 			game_res.resources.locked.sound.play();
 			return
 		};	
@@ -917,99 +930,105 @@ var lb={
 		
 	},
 	
-	update: function () {
+	async update(){
 		
+		/*let players=await firebase.database().ref("players").once('value'); 
+		players=players.val();
 		
-		firebase.database().ref("players").orderByChild('record').limitToLast(25).once('value').then((snapshot) => {
+		for (let [key, value] of Object.entries(players)) {
 			
-			if (snapshot.val()===null) {
-			  console.log("Что-то не получилось получить данные о рейтингах");
+			if(!value.name){
+				
+				firebase.database().ref("players/"+key).remove(); 
+				console.log(key, value);				
 			}
-			else {				
-				
-				
-				objects.lb_1_cont.cacheAsBitmap  = false;
-				objects.lb_2_cont.cacheAsBitmap  = false;
-				objects.lb_3_cont.cacheAsBitmap  = false;	
-				
-				var players_array = [];
-				snapshot.forEach(players_data=> {			
-					if (players_data.val().name!=="" && players_data.val().name!=='')
-						players_array.push([players_data.val().name, players_data.val().record, players_data.val().pic_url]);	
-				});
-				
 
-				players_array.sort(function(a, b) {	return b[1] - a[1];});
+		}
+		
+		return;*/
+		
+			
+		
+		
+		let players=await firebase.database().ref("players").orderByChild('rating').limitToLast(25).once('value');
+		players=players.val();
+		
+
 				
-				
-				//загружаем аватары
-				var loader = new PIXI.Loader();
+		objects.lb_1_cont.cacheAsBitmap  = false;
+		objects.lb_2_cont.cacheAsBitmap  = false;
+		objects.lb_3_cont.cacheAsBitmap  = false;	
+		
+		let  players_array = [];
+		for (let [key, player] of Object.entries(players))
+			if (player.name!=="" && player.name!=='')
+				players_array.push([player.name, player.rating, player.pic_url]);	
+		
+
+		players_array.sort(function(a, b) {	return b[1] - a[1];});
+		
+		
+		//загружаем аватары
+		var loader = new PIXI.Loader();
+						
+		var len=Math.min(10,players_array.length);
+		
+		//загружаем тройку лучших
+		for (let i=0;i<3;i++) {
+			let p = players_array[i];
+			if (p === undefined)
+				break;
+			
+			let fname=p[0];					
+			make_text(objects['lb_'+(i+1)+'_name'],fname,180);
 								
-				var len=Math.min(10,players_array.length);
-				
-				//загружаем тройку лучших
-				for (let i=0;i<3;i++) {
-					let p = players_array[i];
-					if (p === undefined)
-						break;
-					
-					let fname=p[0];					
-					make_text(objects['lb_'+(i+1)+'_name'],fname,180);
-										
-					//objects['lb_'+(i+1)+'_name'].text=fname;
-					objects['lb_'+(i+1)+'_balance'].text = p[1];					
-					
-					
-					let pic_url = p[2];
-					
-					//меняем адрес который невозможно загрузить
-					if (pic_url==="https://vk.com/images/camera_100.png")
-						pic_url = "https://i.ibb.co/fpZ8tg2/vk.jpg";					
-					
-					loader.add('leaders_avatar_'+i, pic_url, {loadType: PIXI.LoaderResource.LOAD_TYPE.IMAGE, timeout: 4000});
-				};
-				
-				//загружаем остальных
-				for (let i=3;i<10;i++) {
-					
-					let p = players_array[i];
+			//objects['lb_'+(i+1)+'_name'].text=fname;
+			objects['lb_'+(i+1)+'_rating'].text = p[1];					
+			
+			
+			let pic_url = p[2];
+			
+			//меняем адрес который невозможно загрузить
+			if (pic_url==="https://vk.com/images/camera_100.png")
+				pic_url = "https://i.ibb.co/fpZ8tg2/vk.jpg";					
+			
+			loader.add('leaders_avatar_'+i, pic_url, {loadType: PIXI.LoaderResource.LOAD_TYPE.IMAGE, timeout: 4000});
+		};
+		
+		//загружаем остальных
+		for (let i=3;i<10;i++) {
+			
+			let p = players_array[i];
 
-					if (p === undefined)
-						break;
-					
-					let fname=p[0];		
-					
-					make_text(objects.lb_cards[i-3].name,fname,200);
-					
-					objects.lb_cards[i-3].record.text=players_array[i][1]	;					
-					loader.add('leaders_avatar_'+i, players_array[i][2],{loadType: PIXI.LoaderResource.LOAD_TYPE.IMAGE, timeout: 3000});					
-					
-				};
-				
-				
-				
-				loader.load((loader, resources) => {
-					
+			if (p === undefined)
+				break;
+			
+			let fname=p[0];		
+			
+			make_text(objects.lb_cards[i-3].name,fname,200);
+			
+			objects.lb_cards[i-3].record.text=players_array[i][1]	;					
+			loader.add('leaders_avatar_'+i, players_array[i][2],{loadType: PIXI.LoaderResource.LOAD_TYPE.IMAGE, timeout: 3000});					
+			
+		};
+		
 
-					for (let i=0;i<3;i++)
-						objects['lb_'+(i+1)+'_avatar'].texture=resources['leaders_avatar_'+i].texture;						
 
-					objects.lb_1_cont.cacheAsBitmap  = true;
-					objects.lb_2_cont.cacheAsBitmap  = true;
-					objects.lb_3_cont.cacheAsBitmap  = true;		
-					
-					anim2.add(objects.lb_1_cont,{x:[450,objects.lb_1_cont.sx]}, false, 0.03,'linear');
-					anim2.add(objects.lb_2_cont,{x:[450,objects.lb_1_cont.sx]}, false, 0.03,'linear');
-					anim2.add(objects.lb_3_cont,{x:[450,objects.lb_1_cont.sx]}, false, 0.03,'linear');
-					
-					
-					for (let i=3;i<10;i++)						
-						objects.lb_cards[i-3].avatar.texture=resources['leaders_avatar_'+i].texture;
+		for (let i=0;i<3;i++)
+			objects['lb_'+(i+1)+'_avatar'].texture=loader.resources['leaders_avatar_'+i].texture;						
 
-				});
-			}
+		objects.lb_1_cont.cacheAsBitmap  = true;
+		objects.lb_2_cont.cacheAsBitmap  = true;
+		objects.lb_3_cont.cacheAsBitmap  = true;		
+		
+		anim2.add(objects.lb_1_cont,{x:[450,objects.lb_1_cont.sx]}, true, 0.3,'linear');
+		anim2.add(objects.lb_2_cont,{x:[450,objects.lb_2_cont.sx]}, true, 0.3,'linear');
+		anim2.add(objects.lb_3_cont,{x:[450,objects.lb_3_cont.sx]}, true, 0.3,'linear');
+		
+		
+		for (let i=3;i<10;i++)						
+			objects.lb_cards[i-3].avatar.texture=loader.resources['leaders_avatar_'+i].texture;
 
-		});
 		
 	}
 	
@@ -1623,7 +1642,8 @@ main_menu = {
 	
 	lb_down(){
 
-		
+		this.close();
+		lb.activate();
 		
 	},
 	
@@ -1730,12 +1750,12 @@ search_menu={
 		
 		if(return_tocken) return;
 		
-		player_obj.cacheAsBitmap=false;
+		player_obj.avatar_and_mask.cacheAsBitmap=false;
 		player_obj.ind=fp_ind;
 		player_obj.avatar.texture=loader.resources[fp_ind].texture;
 		player_obj.name.text=fp_fb_data.name;
 		player_obj.star_count.text=fp_fb_data.rating;
-		player_obj.cacheAsBitmap=true;
+		player_obj.avatar_and_mask.cacheAsBitmap=true;
 		anim2.add(player_obj,{y:[-180, player_obj.sy]}, true, 0.5,'easeOutBack');
 		sound.play('player_found');
 		
@@ -2010,6 +2030,13 @@ game = {
 		
 	},
 	
+	mute_song(){
+		
+		if(this.song_sound && this.song_sound.isPlaying)
+			this.song_sound.stop();
+		
+	},
+	
 	process(){		
 	
 		const ops=[objects.player1,objects.player2];
@@ -2024,7 +2051,6 @@ game = {
 					
 					sound.play('opponent_win');
 					this.update_rating(p);
-
 					this.stop_song('MY_LOSE');
 					return;				
 				}else{
@@ -2045,8 +2071,9 @@ game = {
 		
 		objects.big_record_bcg.alpha=Math.abs(Math.sin(game_tick));	
 		const sec_play=(Date.now()-this.play_start)*0.001;
-		objects.progress_bar.width=450*(24-sec_play)/24;
-		if(objects.progress_bar.width<=0.211)
+		const b_width=450*(24-sec_play)/24;
+		objects.progress_bar.width=b_width;
+		if(b_width<=0.211)
 			this.stop_song('NO_ANSWER');
 
 	},

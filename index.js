@@ -1898,7 +1898,7 @@ game = {
 		
 		//это выбирает фейковый игрок
 		if (my_choose===false){
-			if(this.time_left<irnd(3,7)) {
+			if(this.time_left<irnd(3,8)) {
 				this.select_cat(cat_list[irnd(0,cat_list.length-1)])			
 			}
 		}

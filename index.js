@@ -870,7 +870,7 @@ auth2 = {
 	
 }
 
-var lb={
+lb={
 	
 	add_game_to_vk_menu_shown:0,
 	cards_pos: [[20,300],[20,355],[20,410],[20,465],[20,520],[20,575],[20,630]],
@@ -1012,7 +1012,7 @@ var lb={
 			
 		};
 		
-
+		await new Promise((resolve, reject)=> loader.load(resolve))	
 
 		for (let i=0;i<3;i++)
 			objects['lb_'+(i+1)+'_avatar'].texture=loader.resources['leaders_avatar_'+i].texture;						

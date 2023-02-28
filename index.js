@@ -961,7 +961,7 @@ lb={
 		
 		let  players_array = [];
 		for (let [key, player] of Object.entries(players))
-			if (key!=='undefined')
+			if (key!=='undefined' && player.name)
 				players_array.push([player.name, player.rating, player.pic_url]);	
 		
 

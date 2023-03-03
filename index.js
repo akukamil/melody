@@ -133,8 +133,14 @@ var anim2 = {
 		
 		return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
 		
-		
 	},	
+	
+	long_blink(x){
+		
+		return Math.abs(Math.sin(x*9.4248));
+		
+	},
+	
 	
 	add(obj, params, vis_on_end, time, func) {
 				
@@ -345,11 +351,20 @@ class acard_class extends PIXI.Container {
 		this.star_count_change.y=-5;
 		this.star_count_change.tint=0xFFFF00;
 		this.star_count_change.visible=false;
-				
+		
+		this.bulb=new PIXI.Sprite(gres.bulb.texture);
+		this.bulb.x=90;
+		this.bulb.y=10;
+		this.bulb.anchor.set(0.5,0.5);
+		this.bulb.width=this.bulb.height=60;
+		this.bulb.visible=false;
+		this.bulb.tint=0xffffff;
+			
+						
 		this.amask.width=this.avatar.width=this.frame.width=120;
 		this.amask.height=this.avatar.height=this.frame.height=120;
 		
-		this.addChild(this.avatar_and_mask,this.frame,this.name,this.res_icon,this.star_bcg,this.star_count,this.star_count_change);
+		this.addChild(this.avatar_and_mask,this.frame,this.name,this.res_icon,this.star_bcg,this.star_count,this.star_count_change,this.bulb);
 		
 		this.x=this.sx=x;
 		this.y=this.sy=y;
@@ -390,19 +405,25 @@ class acard_class extends PIXI.Container {
 		const song_name_len=songs_data[cat][song_index].song.length;		
 		const pv1=(this.ind+cat_index*50+song_index+song_index*this.ind)%100;
 		const threshold=~~(this.ind/222+40);
-		
-		
-		if (pv1>threshold){
+				
+		if (pv1>threshold){		
+
+			const think_time=irnd(3000,5000);
+			this.next_try_time=Date.now()+think_time+song_name_len*200;
 			
-			this.next_try_time=Date.now()+irnd(2000,4000)+song_name_len*200;
+			const bulb_ref=this.bulb;
+			if (bulb_ref.visible===false){
+				setTimeout(function(){
+					anim2.add(bulb_ref,{ alpha:[0,1]}, false, 3,'long_blink');
+				},think_time)
+			}		
+			
 			console.log('я знаю')
 		}
-		else{
-			
+		else{			
 			this.next_try_time=Date.now()+999999;	
 			console.log('я не знаю')
 		}
-
 		
 	}
 	

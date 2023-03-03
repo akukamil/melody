@@ -384,31 +384,38 @@ class acard_class extends PIXI.Container {
 		
 	}
 	
-	init_try_time(song_name){
+	init_try_time(cat, song_index){
 		
-		const s_len=song_name.length;
+		const cat_index={'cat197x':0,'cat198x':1,'cat199x':2,'cat200x':3,'cat201x':4,'cat202x':5}[cat];
+		const song_name_len=songs_data[cat][song_index].song.length;		
+		const pv1=(this.ind+cat_index*50+song_index+song_index*this.ind)%100;
+		const threshold=~~(this.ind/222+40);
 		
-		this.win_prob=(this.ind%100)/100;
-		console.log(this.win_prob);
 		
-		
-		//это если вообще не знает
-		if(Math.random()>0.8){
-			this.next_try_time=Date.now()+999999;
-			console.log('no idea');
-			return;
+		if (pv1>threshold){
+			
+			this.next_try_time=Date.now()+irnd(2000,4000)+song_name_len*200;
+			console.log('я знаю')
 		}
+		else{
+			
+			this.next_try_time=Date.now()+999999;	
+			console.log('я не знаю')
+		}
+
 		
-		this.next_try_time=Date.now()+irnd(3000,4000+s_len*1000);
 	}
 	
-	make_a_try(song_name){		
+	make_a_try(cat, song_index){	
+
+		const song_name_len=songs_data[cat][song_index].song.length;	
 				
-		const is_win=Math.random()<this.win_prob;
+		const is_win=Math.random()>0.1;
 		
 		this.show_try_icon(is_win);
 		
-		this.init_try_time(song_name);
+		if(!is_win)
+			this.init_try_time(cat, song_index);
 		
 		return is_win;
 	}
@@ -2045,7 +2052,7 @@ game = {
 		for(const p of ops){
 			
 			if(t>p.next_try_time && this.on){
-				const res=p.make_a_try(this.cur_song_name);			
+				const res=p.make_a_try(this.cur_cat,this.song_index);			
 				if(res){
 					
 					sound.play('opponent_win');
@@ -2181,8 +2188,10 @@ game = {
 		this.play_start=Date.now();
 		this.fly_notes_time=Date.now()+1000;
 		
-		objects.player1.init_try_time(this.cur_song_name);
-		objects.player2.init_try_time(this.cur_song_name);
+		
+		console.log('------------------')
+		objects.player1.init_try_time(this.cur_cat,this.song_index);
+		objects.player2.init_try_time(this.cur_cat,this.song_index);
 		
 		//размещаем буквы
 		objects.letters.forEach(l=>l.visible=false);

@@ -418,11 +418,11 @@ class acard_class extends PIXI.Container {
 				},think_time)
 			}		
 			
-			console.log('я знаю')
+
 		}
 		else{			
 			this.next_try_time=Date.now()+999999;	
-			console.log('я не знаю')
+
 		}
 		
 	}
@@ -1254,8 +1254,6 @@ fake_players={
 			})
 			
 			
-			console.log('Уже набрано: '+Object.keys(this.users).length);
-			//console.log("Ждем 3 сек...")
 			await new Promise((resolve, reject) => setTimeout(resolve, 3000));
 		}
 		

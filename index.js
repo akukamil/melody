@@ -404,7 +404,7 @@ class acard_class extends PIXI.Container {
 		const cat_index={'cat197x':0,'cat198x':1,'cat199x':2,'cat200x':3,'cat201x':4,'cat202x':5}[cat];
 		const song_name_len=songs_data[cat][song_index].song.length;		
 		const pv1=(this.ind+cat_index*50+song_index+song_index*this.ind)%100;
-		const threshold=~~(this.ind/222+30);
+		const threshold=~~(this.ind/222+35);
 				
 		if (pv1>threshold){		
 

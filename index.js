@@ -1489,7 +1489,7 @@ function main_loop() {
 var keep_alive = function() {
 	
 	firebase.database().ref("players/"+my_data.uid+"/tm").set(firebase.database.ServerValue.TIMESTAMP);
-	firebase.database().ref("inbox/"+my_data.uid).onDisconnect().remove();
+	//firebase.database().ref("inbox/"+my_data.uid).onDisconnect().remove();
 	//firebase.database().ref(room_name+'/'+my_data.uid).onDisconnect().remove();
 
 	//set_state({});

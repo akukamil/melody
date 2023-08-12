@@ -1226,6 +1226,7 @@ game = {
 		this.on=false;
 		this.started=false;
 		this.events_on=false;
+		anim2.kill_anim(objects.messages_cont);
 		objects.avatars_cont.visible=false;
 		objects.wait_game_start.visible=false;
 		objects.big_record_cont.visible=false;

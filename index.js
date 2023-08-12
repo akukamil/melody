@@ -1,5 +1,5 @@
-var M_WIDTH = 450, M_HEIGHT = 800, game_platform="", app ={stage:{},renderer:{}}, gres, objects = {}, my_data = {}, game_tick = 0, state ="",git_src='';
-var some_process = {}, my_choose=false, return_tocken=false, hidden_state_start=0;
+var M_WIDTH = 450, M_HEIGHT = 800, game_platform='', app ={stage:{},renderer:{}}, gres, objects = {}, my_data = {}, game_tick = 0, state ="",git_src='';
+var some_process = {}, my_choose=false,fbs, hidden_state_start=0, players_cache={};
 
 rnd2=function(min,max) {	
 	let r=Math.random() * (max - min) + min
@@ -140,8 +140,7 @@ var anim2 = {
 		return Math.abs(Math.sin(x*9.4248));
 		
 	},
-	
-	
+		
 	add(obj, params, vis_on_end, time, func) {
 				
 		//если уже идет анимация данного спрайта то отменяем ее
@@ -303,155 +302,33 @@ class lb_player_card_class extends PIXI.Container{
 	
 }
 
-class acard_class extends PIXI.Container {
+class player_card_class extends PIXI.Container {
 		
 	constructor(x,y) {
 		
 		super();
-		this.resolver=0;
-		//this.bcg=new PIXI.Sprite(gres.avatar_bcg.texture);
-		this.amask=new PIXI.Sprite(gres.avatar_mask.texture);
+		
+		this.bcg=new PIXI.Sprite(gres.player_card_bcg.texture);
+		this.bcg.width=this.bcg.height=90;
+		
 		this.avatar=new PIXI.Sprite();
-		this.avatar.mask=this.amask;
-		
-		this.avatar_and_mask=new PIXI.Container();
-		this.avatar_and_mask.addChild(this.amask,this.avatar)
-		
-		
-		this.frame=new PIXI.Sprite(gres.avatar_frame.texture);
-		
-		this.res_icon=new PIXI.Sprite(gres.cor_img.texture);
-		this.res_icon.width=this.res_icon.height=50;
-		this.res_icon.visible=false;
-		this.res_icon.x=this.res_icon.y=93;
-		this.res_icon.anchor.set(0.5,0.5);
-		
-		this.ind=0;
+		this.avatar.width=this.avatar.height=70;
+		this.avatar.x=this.avatar.y=10;
 				
-		this.name=new PIXI.BitmapText('My name', {fontName: 'mfont', fontSize :25, align: 'center'});
-		this.name.anchor.set(0.5,0);
-		this.name.x=60;
-		this.name.y=120;
-		this.name.maxWidth=130;
-		
-		this.star_bcg=new PIXI.Sprite(gres.star_img.texture);
-		this.star_bcg.anchor.set(0.5,0.5);
-		this.star_bcg.x=this.star_bcg.y=20;
-		this.star_bcg.scale_xy=0.5;
+		this.frame=new PIXI.Sprite(gres.player_card_frame.texture);
+		this.frame.width=this.frame.height=90;
 
-
-		this.star_count=new PIXI.BitmapText('125', {fontName: 'mfont', fontSize :20, align: 'center'});
-		this.star_count.anchor.set(0.5,0.5);
-		this.star_count.x=this.star_count.y=20;
-		this.star_count.tint=0x000000;
-
-		this.star_count_change=new PIXI.BitmapText('0', {fontName: 'mfont', fontSize :30, align: 'center'});
-		this.star_count_change.anchor.set(0.5,0.5);
-		this.star_count_change.x=40;
-		this.star_count_change.y=-5;
-		this.star_count_change.tint=0xFFFF00;
-		this.star_count_change.visible=false;
+		this.name=new PIXI.BitmapText('', {fontName: 'mfont', fontSize :30, align: 'center'});
+		this.name.anchor.set(0.5,0.5);
+		this.name.x=45;
+		this.name.y=100;
+		this.name.tint=0xFFFF00;
 		
-		this.bulb=new PIXI.Sprite(gres.bulb.texture);
-		this.bulb.x=90;
-		this.bulb.y=10;
-		this.bulb.anchor.set(0.5,0.5);
-		this.bulb.width=this.bulb.height=60;
-		this.bulb.visible=false;
-		this.bulb.tint=0xffffff;
-			
-						
-		this.amask.width=this.avatar.width=this.frame.width=120;
-		this.amask.height=this.avatar.height=this.frame.height=120;
-		
-		this.addChild(this.avatar_and_mask,this.frame,this.name,this.res_icon,this.star_bcg,this.star_count,this.star_count_change,this.bulb);
-		
-		this.x=this.sx=x;
-		this.y=this.sy=y;
-		
-		this.next_try_time=0;
-		this.win_prob=0.25;
-		
-	}
-	
-	update_fp_rating(val){
-		
-		this.star_count_change.text=val>0?'+'+val:val;
-		anim2.add(this.star_count_change,{alpha:[1, 0]}, false, 2,'linear');
-		const cur_stars=+this.star_count.text;
-		let new_stars=cur_stars+val;
-		if(new_stars<0) new_stars=0;		
-		this.star_count.text=new_stars;
-		firebase.database().ref("fp/"+this.uid+"/rating").set(new_stars);
-		
-	}
-	
-	update_my_rating(val){
-		
-		this.star_count_change.text=val>0?'+'+val:val;
-		anim2.add(this.star_count_change,{alpha:[1, 0]}, false, 2,'linear');
-		const cur_stars=+this.star_count.text;
-		let new_stars=cur_stars+val;
-		if(new_stars<0) new_stars=0;	
-		my_data.rating=new_stars;
-		this.star_count.text=new_stars;
-		firebase.database().ref("players/"+my_data.uid+"/rating").set(my_data.rating);
-		
-	}
-	
-	init_try_time(cat, song_index){
-		
-		const cat_index={'cat197x':0,'cat198x':1,'cat199x':2,'cat200x':3,'cat201x':4,'cat202x':5}[cat];
-		const song_name_len=songs_data[cat][song_index].song.length;		
-		const pv1=(this.ind+cat_index*50+song_index+song_index*this.ind)%100;
-		const threshold=~~(this.ind/222+35);
+		this.visible=false;
 				
-		if (pv1>threshold){		
-
-			const think_time=irnd(1000,5000);
-			this.next_try_time=Date.now()+think_time+song_name_len*200;
-			
-			const bulb_ref=this.bulb;
-			if (bulb_ref.visible===false){
-				setTimeout(function(){
-					anim2.add(bulb_ref,{ alpha:[0,1]}, false, 3,'long_blink');
-				},think_time)
-			}		
-			
-
-		}
-		else{			
-			this.next_try_time=Date.now()+999999;	
-
-		}
+		this.addChild(this.bcg,this.avatar,this.frame,this.name);
 		
-	}
-	
-	make_a_try(cat, song_index){	
-
-		const song_name_len=songs_data[cat][song_index].song.length;	
-				
-		const is_win=Math.random()>0.1;
-		
-		this.show_try_icon(is_win);
-		
-		if(!is_win)
-			this.init_try_time(cat, song_index);
-		
-		return is_win;
-	}
-	
-	async show_try_icon(is_correct){		
-				
-		if(is_correct)
-			this.res_icon.texture=gres.cor_img.texture;
-		else
-			this.res_icon.texture=gres.incor_img.texture;
-				
-		anim2.add(this.res_icon,{ scale_xy:[0,0.625]}, false, 3,'easeBridge');
-	}
-	
-	
+	}	
 }
 
 class letter_class extends PIXI.Container{
@@ -475,6 +352,38 @@ class letter_class extends PIXI.Container{
 		
 	}
 	
+	
+}
+
+class chat_record_class extends PIXI.Container {
+	
+	constructor() {
+		
+		super();
+		
+		this.correct_bcg=new PIXI.Sprite(gres.correct_bcg.texture);
+		this.correct_bcg.scale_xy=0.45;
+		this.correct_bcg.x=-10;
+		this.correct_bcg.y=-3;
+		
+		this.text=new PIXI.BitmapText('Николай: хорошая игра', {lineSpacing:50,fontName: 'mfont',fontSize:27}); 
+		this.text.maxWidth=290;
+		this.text.tint=0xFFFF00;
+		
+		this.name_text=new PIXI.BitmapText('Николай:', {fontName: 'mfont',fontSize: 27}); 
+		this.name_text.tint=0xFFFFFF;
+				
+		this.addChild(this.correct_bcg,this.text,this.name_text)
+		
+	}
+	
+	set(name, text,color,is_correct){
+		this.correct_bcg.visible=is_correct;
+		this.text.text=name+': '+text;
+		this.name_text.text=name+':';
+		this.name_text.tint=color||0xFFFFFF;
+	
+	}	
 	
 }
 
@@ -538,8 +447,8 @@ keyboard={
 	
 	p_resolve : 0,
 	
-	rus_keys : [[28,123,77.13,163,'<'],[30,23,57.45,63,'Й'],[66.6,23,94.05,63,'Ц'],[103.2,23,130.65,63,'У'],[139.8,23,167.25,63,'К'],[176.4,23,203.85,63,'Е'],[213,23,240.45,63,'Н'],[249.6,23,277.05,63,'Г'],[286.2,23,313.65,63,'Ш'],[322.8,23,350.25,63,'Щ'],[359.4,23,386.85,63,'З'],[396,23,423.45,63,'Х'],[432.6,23,460.05,63,'Ъ'],[48.3,73,75.75,113,'Ф'],[84.9,73,112.35,113,'Ы'],[121.5,73,148.95,113,'В'],[158.1,73,185.55,113,'А'],[194.7,73,222.15,113,'П'],[231.3,73,258.75,113,'Р'],[267.9,73,295.35,113,'О'],[304.5,73,331.95,113,'Л'],[341.1,73,368.55,113,'Д'],[377.7,73,405.15,113,'Ж'],[414.3,73,441.75,113,'Э'],[83.6,123,111.05,163,'Я'],[120.2,123,147.65,163,'Ч'],[156.8,123,184.25,163,'С'],[193.4,123,220.85,163,'М'],[230,123,257.45,163,'И'],[266.6,123,294.05,163,'Т'],[303.2,123,330.65,163,'Ь'],[339.8,123,367.25,163,'Б'],[376.4,123,403.85,163,'Ю'],[412,123,462,163,'V']],
-	open: function(){
+	rus_keys : [[26,124,73,164,'<'],[27,30,56.92,70,'Й'],[63.92,30,93.84,70,'Ц'],[100.83,30,130.75,70,'У'],[137.75,30,167.67,70,'К'],[174.67,30,204.59,70,'Е'],[211.58,30,241.5,70,'Н'],[248.5,30,278.42,70,'Г'],[285.42,30,315.34,70,'Ш'],[322.33,30,352.25,70,'Щ'],[359.25,30,389.17,70,'З'],[396.17,30,426.09,70,'Х'],[433.08,30,463,70,'Ъ'],[40,77,70.91,117,'Ф'],[77.91,77,108.82,117,'Ы'],[115.82,77,146.73,117,'В'],[153.73,77,184.64,117,'А'],[191.64,77,222.55,117,'П'],[229.55,77,260.46,117,'Р'],[267.45,77,298.36,117,'О'],[305.36,77,336.27,117,'Л'],[343.27,77,374.18,117,'Д'],[381.18,77,412.09,117,'Ж'],[419.09,77,450,117,'Э'],[80,124,110.44,164,'Я'],[117.44,124,147.88,164,'Ч'],[154.89,124,185.33,164,'С'],[192.33,124,222.77,164,'М'],[229.78,124,260.22,164,'И'],[267.22,124,297.66,164,'Т'],[304.67,124,335.11,164,'Ь'],[342.11,124,372.55,164,'Б'],[379.56,124,410,164,'Ю'],[417,124,464,164,'V'],[140,171,350,211,' ']],
+	open(){
 				
 		anim2.add(objects.keyboard_cont,{y:[950, objects.keyboard_cont.sy]}, true, 1,'linear');
 				
@@ -549,13 +458,13 @@ keyboard={
 		
 	},
 		
-	close:function(){
+	close(){
 		
 		anim2.add(objects.keyboard_cont,{y:[objects.keyboard_cont.y,950]}, false, 1,'linear');
 		
 	},
 		
-	keydown:function(key){
+	keydown(key){
 				
 		
 		key = key.toUpperCase();
@@ -576,7 +485,9 @@ keyboard={
 		
 	},
 		
-	pointerdown:function(e, inp_key){
+	pointerdown(e, inp_key){
+		
+		if (!game.on) return;
 		
 		let key = -1;
 		let key_x = 0;
@@ -585,7 +496,7 @@ keyboard={
 		if (e !== null) {
 			
 			let mx = e.data.global.x/app.stage.scale.x - objects.keyboard.x;
-			let my = e.data.global.y/app.stage.scale.y - objects.keyboard.y;;
+			let my = e.data.global.y/app.stage.scale.y - objects.keyboard.y;
 
 			let margin = 5;
 			for (let k of this.rus_keys) {			
@@ -607,19 +518,34 @@ keyboard={
 				
 		if (key === -1) return;	
 		
+		if (objects.keyboard_text.text.length>45) return;	
+		objects.keyboard_text.text
+		
 		//подсвечиваем клавишу
-		objects.hl_key.x = objects.keyboard.x+key_x - 20;
-		objects.hl_key.y = objects.keyboard.y+key_y - 20;		
+		objects.hl_key.x = objects.keyboard.x+key_x - 10;
+		objects.hl_key.y = objects.keyboard.y+key_y - 10;		
+		let hl_texture=gres.hl_key0.texture;	
 		if (key === 'V' || key === '<')
-			objects.hl_key.texture = gres.hl_key1.texture;
-		else
-			objects.hl_key.texture = gres.hl_key0.texture;	
+			hl_texture = gres.hl_key1.texture;
+		if (key === ' ' )
+			hl_texture = gres.hl_key2.texture;
+
+		objects.hl_key.texture = hl_texture;	
 		
 		anim2.add(objects.hl_key,{alpha:[1, 0]}, false, 0.5,'linear');
 				
-		l_board.key_down(key);
+		if(key==='<'){			
+			objects.keyboard_text.text=objects.keyboard_text.text.slice(0, -1);
+			return;
+		}
+		
+		if(key==='V'){			
+			game.check_song();
+			objects.keyboard_text.text=''
+			return;
+		}		
 
-
+		objects.keyboard_text.text+=key;
 	}
 		
 }
@@ -709,15 +635,8 @@ ad = {
 
 function vis_change() {
 	
-	if (document.hidden===true) {
-		game.mute_song();
-		hidden_state_start=Date.now();
-	}	
-
-	if (document.hidden===false) {
-		if(Date.now()-hidden_state_start>7000)
-			break_to_main_menu();
-	}	
+	if (document.hidden===true)
+		break_to_main_menu();
 	
 }
 
@@ -960,14 +879,14 @@ lb={
 	
 	async update(){
 		
-		/*let players=await firebase.database().ref("players").once('value'); 
+		/*let players=await fbs.ref("players").once('value'); 
 		players=players.val();
 		
 		for (let [key, value] of Object.entries(players)) {
 			
 			if(!value.name){
 				
-				firebase.database().ref("players/"+key).remove(); 
+				fbs.ref("players/"+key).remove(); 
 				console.log(key, value);				
 			}
 
@@ -978,7 +897,7 @@ lb={
 			
 		
 		
-		let players=await firebase.database().ref("players").orderByChild('rating').limitToLast(25).once('value');
+		let players=await fbs.ref("players").orderByChild('rating').limitToLast(25).once('value');
 		players=players.val();
 		
 
@@ -1062,581 +981,6 @@ lb={
 	
 }
 
-async function load_user_data() {
-	
-	try {
-	
-	
-		//анимация лупы
-		some_process.loup_anim=function() {
-			objects.id_loup.x=20*Math.sin(game_tick*8)+90;
-			objects.id_loup.y=20*Math.cos(game_tick*8)+110;
-		}
-	
-		//получаем данные об игроке из социальных сетей
-		await auth2.init();
-			
-		//устанавлием имя на карточки
-		make_text(objects.id_name,my_data.name,150);
-		//make_text(objects.player0.name,my_data.name,150);
-			
-		//ждем пока загрузится аватар
-		let loader=new PIXI.Loader();
-		loader.add("my_avatar", my_data.pic_url,{loadType: PIXI.LoaderResource.LOAD_TYPE.IMAGE, timeout: 5000});			
-		await new Promise((resolve, reject)=> loader.load(resolve))
-		
-		objects.id_avatar.texture=objects.player0.avatar.texture=loader.resources.my_avatar.texture;
-		
-		//получаем остальные данные об игроке
-		let _other_data = await firebase.database().ref("players/" + my_data.uid).once('value');
-		let other_data = _other_data.val();
-			
-		my_data.rating = (other_data && other_data.rating) || 0;
-		my_data.games = (other_data && other_data.games) || 0;
-		my_data.name = (other_data && other_data.name) || my_data.name;
-			
-			
-		//отключение от игры и удаление не нужного
-		//firebase.database().ref("inbox/"+my_data.uid).onDisconnect().remove();
-		//firebase.database().ref(room_name+'/'+my_data.uid).onDisconnect().remove();			
-
-		//устанавливаем рейтинг в попап
-		objects.id_record.text=objects.player0.star_count.text=my_data.rating;
-		objects.player0.name.text=my_data.name;
-
-		
-		//обновляем почтовый ящик
-		//firebase.database().ref("inbox/"+my_data.uid).set({sender:"-",message:"-",tm:"-",data:{x1:0,y1:0,x2:0,y2:0,board_state:0}});
-
-		//подписываемся на новые сообщения
-		//firebase.database().ref("inbox/"+my_data.uid).on('value', (snapshot) => { process_new_message(snapshot.val());});
-
-		//обновляем данные в файербейс так как могли поменяться имя или фото
-		firebase.database().ref("players/"+my_data.uid).set({name:my_data.name, pic_url: my_data.pic_url, rating : my_data.rating, games : my_data.games, tm:firebase.database.ServerValue.TIMESTAMP});
-
-		//устанавливаем мой статус в онлайн
-		//set_state({state : 'o'});
-
-
-
-		//это событие когда меняется видимость приложения
-		document.addEventListener("visibilitychange", vis_change);
-
-		//keep-alive сервис
-		setInterval(function()	{keep_alive()}, 40000);
-
-	
-		//ждем и убираем попап
-		await new Promise((resolve, reject) => setTimeout(resolve, 1000));
-		
-
-		anim2.add(objects.id_cont,{y:[objects.id_cont.y, -200]}, false, 1,'easeInBack');
-		
-		some_process.loup_anim=function() {};
-		
-	
-	} catch (error) {		
-		alert (error);		
-	}
-	
-}
-
-async function define_platform_and_language() {
-	
-	let s = window.location.href;
-	
-	if (s.includes('yandex')) {
-		
-		game_platform = 'YANDEX';
-		
-		if (s.match(/yandex\.ru|yandex\.by|yandex\.kg|yandex\.kz|yandex\.tj|yandex\.ua|yandex\.uz/))
-			LANG = 0;
-		else 
-			LANG = 1;		
-		return;
-	}
-	
-	if (s.includes('vk.com')) {
-		game_platform = 'VK';	
-		LANG = 0;	
-		return;
-	}
-	
-	if (s.includes('google_play')) {
-			
-		game_platform = 'GOOGLE_PLAY';	
-		LANG = await language_dialog.show();
-		return;
-	}	
-	
-	if (s.includes('crazygames')) {
-			
-		game_platform = 'CRAZYGAMES';	
-		LANG = 1;
-		return;
-	}
-	
-	if (s.includes('192.168')) {
-			
-		game_platform = 'DEBUG';	
-		LANG = 0;
-		return;	
-	}	
-	
-	game_platform = 'UNKNOWN';	
-	LANG = await language_dialog.show();
-	
-	
-
-}
-
-fake_players={
-	
-	users:{},
-	resolver:0,
-	
-	start(){
-		
-		let script = document.createElement('script');
-		let token='vk1.a.f8aHIKv6_L28bxB58x5B5jskKepaPhUYnq-GnkV6w6VMl-flN07fWB88vlLhJw_clgGsGkZ-FjapQJ7tdndDT5qiVSqfAawT7FG4wdCp5UXI5OkpNObKUZdPa0hyuJJZnWux5qs43tvFyOyMceeVqI8gxTiqhMOVKLrQP1b2PfKN7rNHfscn07uPi2Rhl6mQ';
-		let city_id=irnd(0,100);
-		let q='';
-		let hhh='https://api.vk.com/method/users.search?q=';
-		hhh+=q;
-		hhh+='&count=1000&fields=photo_100,last_seen&city_id=';
-		hhh+=city_id;
-		hhh+='&birth_day=';
-		hhh+=irnd(0,25);
-		hhh+='&birth_month=';
-		hhh+=irnd(0,11);	
-		hhh+='&status=';
-		hhh+=irnd(0,8);	
-		hhh+='&has_photo=1&access_token=';
-		hhh+=token;
-		hhh+='&v=5.131';
-		hhh+='&callback=fake_players.response';
-			
-		script.src = hhh;	
-		document.head.appendChild(script);
-		
-	},
-	
-	async run(){
-		
-		
-		let players_cnt=0;
-		
-		for(let i=0;i<100000;i++){
-			
-			let data=await new Promise((res,rej)=>{
-				fake_players.resolver=res;				
-				fake_players.start();				
-			})			
-			
-			data.forEach(p=>{
-				
-				if(p.last_seen) {
-					
-					const name=p.first_name+' '+p.last_name;
-					const uid=p.id+p.first_name+p.last_name;	
-					const pic_url=p.photo_100;
-					
-					if(/^[a-zA-Zа-яА-Я]+$/.test(p.first_name+p.last_name)===true && p.last_seen.time<1623101792 && this.users[uid]===undefined){
-	
-						this.users[uid]={};
-						this.users[uid].uid=uid;
-		
-						firebase.database().ref("fp/"+players_cnt).set({uid,name,pic_url});
-						players_cnt++;
-					}					
-				}
-				
-			})
-			
-			
-			await new Promise((resolve, reject) => setTimeout(resolve, 3000));
-		}
-		
-	
-	},
-	
-	response(data){		
-
-		fake_players.resolver(data.response.items);
-
-	},
-	
-	async update_rating(){		
-
-		for (let i=0;i<8881;i++){
-			
-			await firebase.database().ref("fp/"+i+"/raiting").remove();		
-			await firebase.database().ref("fp/"+i+"/rating").set(irnd(0,10));			
-			if(Math.random()>0.98)
-				await new Promise((resolve, reject) => setTimeout(resolve, 2000));
-			console.log(i);
-		}		
-	}
-	
-}
-
-async function init_game_env() {
-	
-	
-	//инициируем файербейс
-	if (firebase.apps.length===0) {
-		firebase.initializeApp({
-			apiKey: "AIzaSyBG9xnBLS3eGtn7gy58hNVJBSBVUymxA0I",
-			authDomain: "melody-4ab2b.firebaseapp.com",
-			databaseURL: "https://melody-4ab2b-default-rtdb.europe-west1.firebasedatabase.app",
-			projectId: "melody-4ab2b",
-			storageBucket: "melody-4ab2b.appspot.com",
-			messagingSenderId: "950545734258",
-			appId: "1:950545734258:web:bddf99bf8907891702c0eb"
-		});
-	}	
-	
-	
-	//fake_players.update_rating();return;
-			
-	await define_platform_and_language();
-								
-	document.getElementById("m_bar").outerHTML = "";
-    document.getElementById("m_progress").outerHTML = "";
-		
-	//создаем приложение пикси и добавляем тень
-	app.stage = new PIXI.Container();
-	app.renderer = new PIXI.Renderer({width:M_WIDTH, height:M_HEIGHT,antialias:true});
-	document.body.appendChild(app.renderer.view).style["boxShadow"] = "0 0 15px #000000";
-
-    var resize = function () {
-        const vpw = window.innerWidth; // Width of the viewport
-        const vph = window.innerHeight; // Height of the viewport
-        let nvw; // New game width
-        let nvh; // New game height
-
-        if (vph / vpw < M_HEIGHT / M_WIDTH) {
-            nvh = vph;
-            nvw = (nvh * M_WIDTH) / M_HEIGHT;
-        } else {
-            nvw = vpw;
-            nvh = (nvw * M_HEIGHT) / M_WIDTH;
-        }
-        app.renderer.resize(nvw, nvh);
-        app.stage.scale.set(nvw / M_WIDTH, nvh / M_HEIGHT);
-    }
-	
-	//загружаем список песен
-	await auth2.load_script("https://akukamil.github.io/melody/songs.txt");
-
-    resize();
-    window.addEventListener("resize", resize);
-	window.addEventListener('keydown', function(event) { keyboard.keydown(event.key)});
-
-    //создаем спрайты и массивы спрайтов и запускаем первую часть кода
-    for (var i = 0; i < load_list.length; i++) {
-        const obj_class = load_list[i].class;
-        const obj_name = load_list[i].name;
-		console.log('Processing: ' + obj_name)
-        switch (obj_class) {
-        case "sprite":
-            objects[obj_name] = new PIXI.Sprite(game_res.resources[obj_name].texture);
-            eval(load_list[i].code0);
-            break;
-
-        case "block":
-            eval(load_list[i].code0);
-            break;
-
-        case "cont":
-            eval(load_list[i].code0);
-            break;
-
-        case "array":
-			var a_size=load_list[i].size;
-			objects[obj_name]=[];
-			for (var n=0;n<a_size;n++)
-				eval(load_list[i].code0);
-            break;
-        }
-    }
-
-    //обрабатываем вторую часть кода в объектах
-    for (var i = 0; i < load_list.length; i++) {
-        const obj_class = load_list[i].class;
-        const obj_name = load_list[i].name;
-		console.log('Processing2: ' + obj_name)
-        switch (obj_class) {
-        case "sprite":
-            eval(load_list[i].code1);
-            break;
-
-        case "block":
-            eval(load_list[i].code1);
-            break;
-
-        case "cont":	
-			eval(load_list[i].code1);
-            break;
-
-        case "array":
-			var a_size=load_list[i].size;
-				for (var n=0;n<a_size;n++)
-					eval(load_list[i].code1);	;
-            break;
-        }
-    }
-			
-	ad.prv_show = Date.now();
-			
-	//загружаем данные об игроке
-	load_user_data();
-		
-	main_menu.activate();
-	
-    //запускаем главный цикл
-    main_loop();
-}
-
-function load_resources() {
-	
-	//PIXI.Loader.registerPlugin(PIXI.gif.AnimatedGIFLoader);
-    game_res = new PIXI.Loader();
-		
-	//короткая ссылка на ресурсы
-	gres=game_res.resources;
-	
-	git_src="https://akukamil.github.io/melody/"
-	//git_src=""
-	
-
-	
-	game_res.add("m2_font", git_src+"/fonts/Neucha/font.fnt");
-
-	game_res.add('op_correct',git_src+'sounds/op_correct.mp3');
-	game_res.add('click',git_src+'sounds/click.mp3');
-	game_res.add('close',git_src+'sounds/close.mp3');
-	game_res.add('lose',git_src+'sounds/lose.mp3');
-	game_res.add('locked',git_src+'sounds/locked.mp3');
-	game_res.add('applause',git_src+'sounds/applause.mp3');
-	game_res.add('wrong',git_src+'sounds/wrong.mp3');
-	game_res.add('opponent_win',git_src+'sounds/opponent_win.mp3');
-	game_res.add('player_found',git_src+'sounds/player_found.mp3');
-	game_res.add('keypress',git_src+'sounds/keypress.mp3');
-	
-    //добавляем из листа загрузки
-    for (var i = 0; i < load_list.length; i++) {
-		
-        if (load_list[i].class === "sprite" )
-            game_res.add(load_list[i].name, git_src+"res/RUS/" + load_list[i].name + "." +  load_list[i].image_format);		
-		
-        if (load_list[i].class === "image")
-            game_res.add(load_list[i].name, git_src+"res/RUS/" + load_list[i].name + "." +  load_list[i].image_format);
-	}
-
-		
-    game_res.load(init_game_env);
-    game_res.onProgress.add(progress);
-
-    function resize_screen() {
-        const vpw = window.innerWidth; // Width of the viewport
-        const vph = window.innerHeight; // Height of the viewport
-        let nvw; // New game width
-        let nvh; // New game height
-
-        if (vph / vpw < M_HEIGHT / M_WIDTH) {
-            nvh = vph;
-            nvw = (nvh * M_WIDTH) / M_HEIGHT;
-        } else {
-            nvw = vpw;
-            nvh = (nvw * M_HEIGHT) / M_WIDTH;
-        }
-        app.renderer.resize(nvw, nvh);
-        app.stage.scale.set(nvw / M_WIDTH, nvh / M_HEIGHT);
-    }
-
-    function progress(loader, resource) {
-
-        document.getElementById("m_bar").style.width = Math.round(loader.progress) + "%";
-    }
-
-}
-
-var now, then=Date.now(), elapsed,time_per_frame=1000/65;
-function main_loop() {
-
-	now = Date.now();
-	elapsed = now-then;
-	
-    if (elapsed > time_per_frame) {
-		
-		then = now;
-		
-		game_tick+=0.016666666;
-		anim2.process();
-		
-		//обрабатываем минипроцессы
-		for (let key in some_process)
-			some_process[key]();		
-		
-	}
-
-	//отображаем сцену
-	app.renderer.render(app.stage);		
-	requestAnimationFrame(main_loop);
-}
-
-var keep_alive = function() {
-	
-	firebase.database().ref("players/"+my_data.uid+"/tm").set(firebase.database.ServerValue.TIMESTAMP);
-	//firebase.database().ref("inbox/"+my_data.uid).onDisconnect().remove();
-	//firebase.database().ref(room_name+'/'+my_data.uid).onDisconnect().remove();
-
-	//set_state({});
-}
-
-l_board={
-	
-	cells_num:0,
-	filled:0,
-	letter_id:0,
-	line0:'',
-	start_filled:3,
-	
-	key_down(key){
-				
-		if(key==='<'){			
-			if (this.filled>0)
-				objects.letters[--this.filled].letter.text='';
-			return;
-		}
-		
-		if(key==='V'){			
-			game.check_song();
-			return;
-		}
-		
-		if(this.filled>=this.cells_num)
-			return;
-
-		objects.letters[this.filled].letter.text=key;
-		this.filled++;
-		
-	},
-	
-	place_line(str,ypos){
-		
-		let s_len=0;
-		
-		const c_len=objects.letters[0].bcg.width;
-		
-		for(let c of str) {
-			if (c===' '){
-				s_len+=c_len*0.5;		
-				
-			}else{
-				s_len+=c_len;
-				this.cells_num++;
-			}
-		}
-				
-		let xpos=(450-s_len)/2;
-		for (let i=0;i<str.length;i++){
-			
-			const l=str[i];			
-			if (l===' '){
-				xpos+=c_len*0.5;			
-				
-			}else{
-				objects.letters[this.letter_id].y=ypos;
-				objects.letters[this.letter_id].x=xpos;
-				objects.letters[this.letter_id].letter.text='';	
-				objects.letters[this.letter_id].visible=true;
-				this.letter_id++;
-				xpos+=c_len;
-			}			
-		}	
-		
-	},
-	
-	init(song_name){
-		
-		this.start_filled=0;
-		if(my_data.rating<10){
-			this.start_filled=3;			
-			if(song_name.length<5)
-				this.start_filled=1;
-		}
-
-		
-		const words=song_name.split(' ');
-		const num_of_words=words.length;
-		const num_of_c=song_name.length;		
-		let cells_struct=[num_of_words,0]
-		if(num_of_c>20) {			
-			if(num_of_words>0) {
-				cells_struct=[num_of_words-1,1]
-			}			
-		}
-		
-		this.line0=words.slice(0,cells_struct[0]).join(' ');
-		let line1=words.slice(-cells_struct[1]).join(' ');
-		if(cells_struct[1]===0)
-			line1='';
-		
-		//формируем линии
-		this.letter_id=0;
-		this.cells_num=0;
-		this.filled=0;
-		if (line1===''){
-			this.place_line(this.line0,575);
-		}else{
-			this.place_line(this.line0,555);
-			this.place_line(line1,595);			
-			
-		}
-		
-		//подсказка начальная
-		this.add_starting_hint();
-
-
-		
-	},
-	
-	add_starting_hint(){
-		
-		//добавляем несколько букс
-		const song_name=this.line0.replace(/\s/g, '')
-		this.filled=this.start_filled;
-		for(let c=0;c<this.start_filled;c++)
-			objects.letters[c].letter.text=song_name[c];		
-		
-	},
-	
-	get_song_name(){
-		
-		let song_name='';
-		for (let c=0;c<this.filled;c++){
-			song_name+=objects.letters[c].letter.text
-		}
-		return song_name;		
-		
-	},
-	
-	clear(){
-		
-		
-		objects.letters.forEach(l=>{
-			l.letter.text='';			
-		})
-		
-		this.add_starting_hint();
-
-		
-	}
-	
-}
-
 main_menu = {
 		
 	activate(){
@@ -1652,10 +996,8 @@ main_menu = {
 		if(anim2.any_on()===true)
 			return;
 
-		return_tocken=false;
 		this.close();		
-		search_menu.activate();
-		
+		game.activate();		
 	},
 	
 	rules_button_down(){
@@ -1687,260 +1029,213 @@ main_menu = {
 	
 }
 
-search_menu={
+messages={
 	
-	fp_data:0,
-	change_avatar_time:0,
-	avatar_iterator:0,
-	FP_TO_LOAD:5,
-	
-	activate(){
+	on:false,
+	bottom:560,
+	cont_total_shift:0,
+	add(name,text,color,is_correct){
 		
-		objects.search_cont.visible=true;
-		some_process.search_menu=this.process.bind(this);
-		anim2.add(objects.player0,{y:[-180, objects.player0.sy]}, true, 0.5,'easeOutBack');
-		this.anim_notes();
-		this.load_photos();
+		const oldest=this.get_old_message();
+		oldest.y=this.bottom;
+		oldest.set(name,text,color,is_correct);
+		oldest.visible=true;
+		this.bottom+=25;
+		this.cont_total_shift-=25;
+		anim2.add(objects.messages_cont,{y:[objects.messages_cont.y, this.cont_total_shift]}, true, 0.15,'linear');
 		
 	},
 	
-	get_unique_valus(N,min_inc,max_inc){
+	get_old_message(){
 		
-		let uset = new Set();
-		while (uset.size < N) {
-		let rint = Math.floor(Math.random() * (max_inc - min_inc + 1)) + min_inc;
-			uset.add(rint);
-		}
-		return Array.from(uset);		
-	},
-	
-	async load_photos(){
+		const res=objects.messages.find(msg => msg.visible===false);
+		if(res) return res;
 		
-		const fp_ids=this.get_unique_valus(this.FP_TO_LOAD,0,8880);
-		
-		this.fp_data=[];
-		let loader=new PIXI.Loader();
-		
-		//загружаем фотки
-		for (let i=0;i<this.FP_TO_LOAD;i++){
-			
-			const fp_id=fp_ids[i];
-			const snapshot = await firebase.database().ref("fp/"+fp_id).once('value');
-			const fp_fb_data = snapshot.val();
-
-			loader.add(fp_fb_data.uid, fp_fb_data.pic_url,{loadType: PIXI.LoaderResource.LOAD_TYPE.IMAGE, timeout: 5000});
-			await new Promise((resolve, reject)=> loader.load(resolve));
-
-			objects.search_avatar_and_name_cont.visible=true;
-			objects.search_photo_block.texture=loader.resources[fp_fb_data.uid].texture;
-			objects.search_name.text=fp_fb_data.name;
-			
-			this.fp_data.push({uid:fp_id, name:fp_fb_data.name,rating:fp_fb_data.rating,texture:loader.resources[fp_fb_data.uid].texture});
-			if(return_tocken) return;
-		}		
-				
-		//добавляем игроков
-		
-		await this.add_fp(objects.player1);
-		if(return_tocken) return;
-		
-		await new Promise((resolve, reject) => setTimeout(resolve, irnd(2000,5000)));
-		if(return_tocken) return;
-		
-		await this.add_fp(objects.player2);
-		if(return_tocken) return;
-		
-		this.close();
-		game.activate();
-		
-	},
-	
-	async add_fp(player_obj){
-		
-		let fp_ind=irnd(0,8881);
-		
-		if(player_obj===objects.player1){
-			while(fp_ind===objects.player2.uid)
-				fp_ind=irnd(0,8881);
-		}else{
-			while(fp_ind===objects.player1.uid)
-				fp_ind=irnd(0,8881);
-		}
-		
-		const _data = await firebase.database().ref("fp/"+fp_ind).once('value');
-		const fp_fb_data = _data.val();
-		
-		let loader=new PIXI.Loader();
-		loader.add(fp_ind.toString(), fp_fb_data.pic_url,{loadType: PIXI.LoaderResource.LOAD_TYPE.IMAGE, timeout: 5000});
-		await new Promise((resolve, reject)=> loader.load(resolve));
-		
-		if(return_tocken) return;
-		
-		player_obj.avatar_and_mask.cacheAsBitmap=false;
-		player_obj.ind=fp_ind;
-		player_obj.avatar.texture=loader.resources[fp_ind].texture;
-		player_obj.name.text=fp_fb_data.name;
-		player_obj.star_count.text=fp_fb_data.rating;
-		player_obj.avatar_and_mask.cacheAsBitmap=true;
-		anim2.add(player_obj,{y:[-180, player_obj.sy]}, true, 0.5,'easeOutBack');
-		sound.play('player_found');
-		
-	},
-	
-	close(){
-		this.on=false;
-		objects.search_cont.visible=false;	
-		some_process.search_menu=function(){};		
-	},
-		
-	async anim_notes(){
-		
-		
-		let prv_note_index=0;
-		while(true) {
-			
-			for(let i=0;i<4;i++){			
-				
-				objects.search_opp_note[prv_note_index].texture=gres.note_tex.texture;
-				objects.search_opp_note[i].texture=gres.note_tex1.texture;
-				prv_note_index=i;
-				await new Promise((resolve, reject) => setTimeout(resolve, 500));
-				if(return_tocken) return;
-				
-			}	
-			
-		}
-	
-		
-	},
-	
-	process(){
-		
-		objects.search_opp_header.y=objects.search_opp_header.sy+Math.sin(game_tick*5)*10;
-		
-		if(this.fp_data.length===this.FP_TO_LOAD) {
-			
-			if(game_tick>this.change_avatar_time){
-				
-				objects.search_photo_block.texture=this.fp_data[this.avatar_iterator%5].texture;
-				objects.search_name.text=this.fp_data[this.avatar_iterator%5].name;			
-				this.change_avatar_time=game_tick+0.25;
-				this.avatar_iterator++;
-			}			
-			
-			
-		}
-
-
-	
-		
+		return objects.messages.reduce((oldest, msg) => {
+			return oldest.y < msg.y ? oldest : msg;
+		});		
 	}
 	
-}
-
-break_to_main_menu=function(){
 	
-	return_tocken=true;
-	anim2.kill_all();
-	app.stage.children.forEach(c=>c.visible=false);
-	some_process.main_menu=function(){};
-	some_process.game=function(){};
-	clearInterval(game.timer);
-	main_menu.activate();
-	if(game.song_sound && game.song_sound.isPlaying)
-		game.song_sound.stop();
-		
 }
 
 game = {
 	
 	song_instance:0,
-	song_sound:0,
+	song_sound:null,
 	song_index:0,
 	song_obj:{},
 	play_start:0,
-	cur_cat:'',
-	cur_song_name:'',
 	fly_notes_time:0,
-	op_try_time:0,
 	song_loader:new PIXI.Loader(),
-	timer:0,
 	on:false,
-	time_left:5,
+	started:false,
+	events_on:false,
 		
-	activate(fp_id){
+	async activate(){
 		
-		this.activate_cat_menu();
+		some_process.game=this.process.bind(game);
+		objects.wait_game_start.visible=true;
+		anim2.add(objects.big_record_cont,{x:[-300, objects.big_record_cont.sx]}, true, 0.5,'easeOutBack');
+		anim2.add(objects.avatars_cont,{y:[-100, objects.avatars_cont.sy]}, true, 0.5,'easeOutBack');
+		anim2.add(objects.t_players_online,{x:[500, objects.t_players_online.sx]}, true, 0.5,'easeOutBack');
 		
-	},
-	
-	activate_cat_menu(){
+		//убираем сообщения
+		objects.messages.forEach(m=>m.visible=false);
 		
-		objects.cat_choose_frame.visible=false;		
+		//начинаем прослушку событий
+		fbs.ref('game_event').on('value',snapshot=>{			
+			if (game.events_on)
+				game.event(snapshot.val());		
+			game.events_on=true;
+		})
 		
-		my_choose=Math.random()>0.5;
+		//начинаем прослушку сообщений
+		fbs.ref('song_variants').on('value',snapshot=>{			
+			game.event(snapshot.val());		
+		})
 		
-		if (Math.random()>0.85)
-			this.replace_some_player();
-							
-		//смотря кто выбирает
-		if(my_choose){			
-			
-			objects.cat_buttons_cont.alpha=1;
-			objects.choose_cat_header.texture=gres.choose_cat_header.texture;			
-		}else{
-			objects.cat_buttons_cont.alpha=0.5;
-			objects.choose_cat_header.texture=gres.op_choose_text.texture;		
-			
-		}
+		//обновление онлайн игроков
+		fbs.ref('states').on('value',snapshot=>{			
+			game.players_updated(snapshot.val());		
+		})
+		
 
-		
-		anim2.add(objects.choose_cat_header,{scale_y:[0, 0.666]}, true, 0.5,'linear');
-		anim2.add(objects.cat_buttons_cont,{x:[450, 0]}, true, 0.5,'linear');
-						
-		this.time_left=8;
-		objects.time_left.text=this.time_left;
-		this.timer=setInterval(game.time_tick.bind(game), 1000);
-		
 	},
 	
-	async replace_some_player(){
-		
-		const player_to_replace=[objects.player1,objects.player2][irnd(0,2)];
-		search_menu.add_fp(player_to_replace);
-	
-	},
-	
-	time_tick(){
-		
-		if(return_tocken) return;
-		
-		this.time_left--;
-		objects.time_left.text=this.time_left;
-		const cat_list=['cat200x','cat201x','cat202x'];
-		if(this.time_left===0) {
-			this.select_cat(cat_list[irnd(0,cat_list.length-1)])			
-		}
-		
-		//это выбирает фейковый игрок
-		if (my_choose===false){
-			if(this.time_left<irnd(3,8)) {
-				this.select_cat(cat_list[irnd(0,cat_list.length-1)])			
+	async update_players_cache_data(uid){
+		if (players_cache[uid]){
+			if (!players_cache[uid].name){
+				let t=await fbs.ref('players/' + uid + '/name').once('value');
+				players_cache[uid].name=t.val()||'***';
 			}
+							
+			if (!players_cache[uid].pic_url){
+				let t=await fbs.ref('players/' + uid + '/pic_url').once('value');
+				players_cache[uid].pic_url=t.val()||null;
+			}
+			
+		}else{
+			
+			players_cache[uid]={};
+			let t=await fbs.ref('players/' + uid).once('value');
+			t=t.val();
+			players_cache[uid].name=t.name||'***';
+			players_cache[uid].pic_url=t.pic_url||'';
+		}		
+	},
+	
+	async get_texture(pic_url) {
+		
+		if (!pic_url) PIXI.Texture.WHITE;
+		
+		//меняем адрес который невозможно загрузить
+		if (pic_url==="https://vk.com/images/camera_100.png")
+			pic_url = "https://i.ibb.co/fpZ8tg2/vk.jpg";	
+				
+		if (PIXI.utils.TextureCache[pic_url]===undefined || PIXI.utils.TextureCache[pic_url].width===1) {
+					
+			let loader=new PIXI.Loader();
+			loader.add('pic', pic_url,{loadType: PIXI.LoaderResource.LOAD_TYPE.IMAGE, timeout: 5000});			
+			await new Promise((resolve, reject)=> loader.load(resolve))	
+			return loader.resources.pic.texture||PIXI.Texture.WHITE;
+
+		}		
+		
+		return PIXI.utils.TextureCache[pic_url];		
+	},
+		
+	async load_avatar (params = {uid : 0, tar_obj : 0}) {		
+
+		const pic_url=players_cache[params.uid].pic_url;
+		const t=await this.get_texture(pic_url);
+		params.tar_obj.texture=t;			
+	},
+	
+	async players_updated(players){
+		
+		if(!players) return;
+		console.log(players)
+		uids=Object.keys(players);
+		
+		objects.t_players_online.text='Игроков\nонлайн: ' +uids.length;
+		
+		objects.pcards.forEach(c=>c.visible=false)
+		let cnt=0;
+		for (let uid of uids){
+			
+			await this.update_players_cache_data(uid);		
+			objects.pcards[cnt].visible=true;
+			make_text(objects.pcards[cnt].name,players_cache[uid].name,75);
+			this.load_avatar({uid:uid,tar_obj:objects.pcards[cnt].avatar})
+			cnt++;
+			if(cnt===objects.pcards.length) return;
 		}
+	
 		
 	},
 	
+	event(data){		
+		
+		console.log(data);
+		if (data.event==='new_song'){			
+			this.song_index=data.data;
+			this.load_and_play();			
+		}	
+
+		if (data.event==='timeout'){		
+			if(this.song_sound)
+				this.song_sound.stop();	
+			this.on=false;
+			sound.play('timeout');
+			messages.add('Админ','Никто не угадал!',0x5555ff)
+			console.log('timeout');
+		}	
+		
+		if (data.event==='variant'){
+			if (this.started){
+				const is_correct=data.song===songs_data[this.song_index].song.toUpperCase();				
+				messages.add(data.name,data.song,null,is_correct)
+			}
+			console.log('variant');
+		}	
+		
+		if (data.event==='winner_found'){	
+			if(this.song_sound)
+				this.song_sound.stop();		
+			
+			if (data.data===my_data.uid){				
+				sound.play('applause');	
+				anim2.add(objects.hand,{x:[450, objects.hand.sx]}, false, 3,'easeBridge');
+				console.log('Вы угадали правильно');
+			}else{
+				sound.play('op_win');			
+			}
+			this.on=false;
+			console.log('winner_found',data.data);
+		}	
+	},
+		
 	close(){
 		
-		search_menu.close();
-		clearInterval(this.timer);
-		objects.choose_cat_header.visible=false;
-		objects.cat_buttons_cont.visible=false;
-		objects.cat_choose_frame.visible=false;
+		
+		fbs.ref('game_event').off();
+		fbs.ref('states').off();
+		if(this.song_sound && this.song_sound.isPlaying)
+			this.song_sound.stop();
+		this.on=false;
+		this.started=false;
+		this.events_on=false;
+		objects.avatars_cont.visible=false;
+		objects.wait_game_start.visible=false;
 		objects.big_record_cont.visible=false;
 		objects.progress_bar.visible=false;
-		
+		objects.close_game.visible=false;
+		objects.hand.visible=false;
+		objects.t_players_online.visible=false;
+		objects.cat_hint.visible=false;
+		objects.keyboard_cont.visible=false;
+		objects.messages_cont.visible=false;
 	},
 	
 	back_to_main_menu(){
@@ -1956,61 +1251,10 @@ game = {
 			
 
 	},
-			
-	async close_cat_menu(){
-		
-		anim2.add(objects.choose_cat_header,{scale_y:[0.666, 0]}, false, 0.5,'linear');		
-		await new Promise((resolve, reject) => setTimeout(resolve, 500));
-
-		await anim2.add(objects.cat_buttons_cont,{x:[0, -450]}, false, 0.5,'linear');
-		
-	},
-			
-	cat_down(cat){		
-		
-		if(!my_choose)
-			return;
-		
-		this.select_cat(cat);
-		
-	},
-	
-	async select_cat(cat){
-		
-		clearInterval(this.timer);
-				
-		if (objects.cat_choose_frame.visible===true)
-			return;
-				
-		sound.play('click');
-				
-		this.cur_cat=cat;
-		objects.cat_choose_frame.visible=true;
-		objects.cat_choose_frame.x=objects[cat].x;
-		objects.cat_choose_frame.y=objects[cat].y;
-		
-		await this.close_cat_menu();		
-		
-		this.song_index=irnd(0,songs_data[this.cur_cat].length);
-		this.song_obj=songs_data[this.cur_cat][this.song_index];
-		this.load_and_play();
-		this.on=true;
-	},
 		
 	check_song(){
 						
-		if(return_tocken || !this.on) return;
-				
-		if(this.cur_song_name.replace(/\s/g, '')===l_board.get_song_name()){						
-			objects.player0.show_try_icon(true);
-			this.stop_song('MY_WIN');
-			this.update_rating(objects.player0);
-
-		}else{
-			l_board.clear();
-			sound.play('wrong');
-			objects.player0.show_try_icon(false);
-		}
+		fbs.ref('song_variants').set({event:'variant',song:objects.keyboard_text.text,uid:my_data.uid,name:my_data.name,tm:Date.now()})
 		
 	},
 	
@@ -2063,26 +1307,7 @@ game = {
 	},
 	
 	process(){		
-	
-		const ops=[objects.player1,objects.player2];
-		const t=Date.now();
-		
-		//обрабатываем соперников
-		for(const p of ops){
 			
-			if(t>p.next_try_time && this.on){
-				const res=p.make_a_try(this.cur_cat,this.song_index);			
-				if(res){
-					
-					sound.play('opponent_win');
-					this.update_rating(p);
-					this.stop_song('MY_LOSE');
-					return;				
-				}else{
-					sound.play('wrong');
-				}
-			}			
-		}
 
 		if(this.song_sound && this.song_sound.isPlaying) {
 			
@@ -2090,7 +1315,7 @@ game = {
 			objects.big_record.rotation+=0.02;			
 			
 			//добавляем нотки для анимации
-			this.add_flying_notes();		
+			this.add_flying_notes();	
 			
 		}
 		
@@ -2098,8 +1323,6 @@ game = {
 		const sec_play=(Date.now()-this.play_start)*0.001;
 		const b_width=450*(24-sec_play)/24;
 		objects.progress_bar.width=b_width;
-		if(b_width<=0.211)
-			this.stop_song('NO_ANSWER');
 
 	},
 		
@@ -2182,53 +1405,366 @@ game = {
 	async load_and_play(){
 		
 		this.song_loader.destroy();
-		this.song_loader.add('song', git_src+"/songs/"+this.cur_cat+"/"+this.song_index+".mp3",{timeout: 5000});	
-		this.cur_song_name=songs_data[this.cur_cat][this.song_index].song.toUpperCase();
-		await new Promise((resolve, reject)=> game.song_loader.load(resolve));
-		if(return_tocken) return;
+		this.song_loader.add('song', 'https://akukamil.github.io/melody/songs_uncat/'+this.song_index+'.mp3',{timeout: 5000});	
+		await new Promise(resolve=>game.song_loader.load(resolve));
 
-		//подсказка категории
-		objects.cat_hint.text={'cat197x':'197x год','cat198x':'198x год','cat199x':'199x год','cat200x':'200x год','cat201x':'201x год','cat202x':'202x год'}[this.cur_cat];
-		anim2.add(objects.cat_hint,{x:[-100, objects.cat_hint.sx]}, false, 8,'easeBridge');
-		
+		if (objects.wait_game_start.visible)
+			objects.wait_game_start.visible=false;
+
 		//проверяем что нормально загрузилось
 		try {
 			this.song_sound=game.song_loader.resources.song.sound;
 			if(this.song_sound.duration<1){alert('Ошибка')}
 		} catch (error) {
 			alert('Ошибка');
-		}
+		}		
 		
 		this.on=true;
+		this.started=true;
+		objects.keyboard_text.text='';
+		this.song_sound.play();
 		
-		this.song_instance=this.song_sound.play();
-		this.song_instance.on('end',function(){game.song_play_end()});
-		some_process.game=this.process.bind(game);
 		this.play_start=Date.now();
 		this.fly_notes_time=Date.now()+1000;
-		
-		
-		console.log('------------------')
-		objects.player1.init_try_time(this.cur_cat,this.song_index);
-		objects.player2.init_try_time(this.cur_cat,this.song_index);
-		
-		//размещаем буквы
-		objects.letters.forEach(l=>l.visible=false);
-		
-		//считаем длину
-		l_board.init(this.cur_song_name);
-		
-		
+						
 		keyboard.open();
-		anim2.add(objects.big_record_cont,{x:[-450, objects.big_record_cont.sx]}, true, 1,'easeOutBack');
-		anim2.add(objects.close_game,{x:[450, objects.close_game.sx]}, true, 1,'easeOutBack');
+		
+		objects.cat_hint.text=songs_data[this.song_index].cat;
+		anim2.add(objects.cat_hint,{x:[-50, objects.cat_hint.sx]}, true, 0.5,'easeOutBack');
+		anim2.add(objects.close_game,{x:[450, objects.close_game.sx]}, true, 0.5,'easeOutBack');
 		
 		objects.progress_bar.x=0;
 		anim2.add(objects.progress_bar,{alpha:[0, 1]}, true, 1,'linear');
 		
+		objects.progress_bar.scale_x=1;
 		objects.progress_bar.width=450;
 	}
 	
 	
 }
+
+function break_to_main_menu(){
+	
+	game.close();
+	main_menu.activate();
+	
+	
+	
+	
+}
+
+async function define_platform_and_language() {
+	
+	let s = window.location.href;
+	
+	if (s.includes('yandex')) {
+		
+		game_platform = 'YANDEX';
+		
+		if (s.match(/yandex\.ru|yandex\.by|yandex\.kg|yandex\.kz|yandex\.tj|yandex\.ua|yandex\.uz/))
+			LANG = 0;
+		else 
+			LANG = 1;		
+		return;
+	}
+	
+	if (s.includes('vk.com')) {
+		game_platform = 'VK';	
+		LANG = 0;	
+		return;
+	}
+	
+	if (s.includes('google_play')) {
+			
+		game_platform = 'GOOGLE_PLAY';	
+		LANG = await language_dialog.show();
+		return;
+	}	
+	
+	if (s.includes('crazygames')) {
+			
+		game_platform = 'CRAZYGAMES';	
+		LANG = 1;
+		return;
+	}
+	
+	if (s.includes('192.168')) {
+			
+		game_platform = 'DEBUG';	
+		LANG = 0;
+		return;	
+	}	
+	
+	game_platform = 'UNKNOWN';	
+	LANG = await language_dialog.show();
+	
+	
+
+}
+
+async function init_game_env() {
+	
+	
+	//инициируем файербейс
+	if (firebase.apps.length===0) {
+		firebase.initializeApp({
+			apiKey: "AIzaSyBG9xnBLS3eGtn7gy58hNVJBSBVUymxA0I",
+			authDomain: "melody-4ab2b.firebaseapp.com",
+			databaseURL: "https://melody-4ab2b-default-rtdb.europe-west1.firebasedatabase.app",
+			projectId: "melody-4ab2b",
+			storageBucket: "melody-4ab2b.appspot.com",
+			messagingSenderId: "950545734258",
+			appId: "1:950545734258:web:bddf99bf8907891702c0eb"
+		});
+	}	
+	
+	
+	//короткое образ
+	fbs=firebase.database();
+			
+	await define_platform_and_language();
+								
+	document.getElementById("m_bar").outerHTML = "";
+    document.getElementById("m_progress").outerHTML = "";
+		
+	//создаем приложение пикси и добавляем тень
+	app.stage = new PIXI.Container();
+	app.renderer = new PIXI.Renderer({width:M_WIDTH, height:M_HEIGHT,antialias:true});
+	document.body.appendChild(app.renderer.view).style["boxShadow"] = "0 0 15px #000000";
+
+    var resize = function () {
+        const vpw = window.innerWidth; // Width of the viewport
+        const vph = window.innerHeight; // Height of the viewport
+        let nvw; // New game width
+        let nvh; // New game height
+
+        if (vph / vpw < M_HEIGHT / M_WIDTH) {
+            nvh = vph;
+            nvw = (nvh * M_WIDTH) / M_HEIGHT;
+        } else {
+            nvw = vpw;
+            nvh = (nvw * M_HEIGHT) / M_WIDTH;
+        }
+        app.renderer.resize(nvw, nvh);
+        app.stage.scale.set(nvw / M_WIDTH, nvh / M_HEIGHT);
+    }
+	
+	//загружаем список песен
+	await auth2.load_script(git_src+'/songs.txt');
+
+    resize();
+    window.addEventListener("resize", resize);
+	window.addEventListener('keydown', function(event) { keyboard.keydown(event.key)});
+
+    //создаем спрайты и массивы спрайтов и запускаем первую часть кода
+    for (var i = 0; i < load_list.length; i++) {
+        const obj_class = load_list[i].class;
+        const obj_name = load_list[i].name;
+		console.log('Processing: ' + obj_name)
+        switch (obj_class) {
+        case "sprite":
+            objects[obj_name] = new PIXI.Sprite(game_res.resources[obj_name].texture);
+            eval(load_list[i].code0);
+            break;
+
+        case "block":
+            eval(load_list[i].code0);
+            break;
+
+        case "cont":
+            eval(load_list[i].code0);
+            break;
+
+        case "array":
+			var a_size=load_list[i].size;
+			objects[obj_name]=[];
+			for (var n=0;n<a_size;n++)
+				eval(load_list[i].code0);
+            break;
+        }
+    }
+
+    //обрабатываем вторую часть кода в объектах
+    for (var i = 0; i < load_list.length; i++) {
+        const obj_class = load_list[i].class;
+        const obj_name = load_list[i].name;
+		console.log('Processing2: ' + obj_name)
+        switch (obj_class) {
+        case "sprite":
+            eval(load_list[i].code1);
+            break;
+
+        case "block":
+            eval(load_list[i].code1);
+            break;
+
+        case "cont":	
+			eval(load_list[i].code1);
+            break;
+
+        case "array":
+			var a_size=load_list[i].size;
+				for (var n=0;n<a_size;n++)
+					eval(load_list[i].code1);	;
+            break;
+        }
+    }
+			
+	ad.prv_show = Date.now();
+			
+	//анимация лупы
+	some_process.loup_anim=function() {
+		objects.id_loup.x=20*Math.sin(game_tick*8)+90;
+		objects.id_loup.y=20*Math.cos(game_tick*8)+110;
+	}
+
+	//получаем данные об игроке из социальных сетей
+	await auth2.init();
+		
+	//устанавлием имя на карточки
+	make_text(objects.id_name,my_data.name,150);
+	//make_text(objects.player0.name,my_data.name,150);
+		
+	//ждем пока загрузится аватар
+	let loader=new PIXI.Loader();
+	loader.add("my_avatar", my_data.pic_url,{loadType: PIXI.LoaderResource.LOAD_TYPE.IMAGE, timeout: 5000});			
+	await new Promise((resolve, reject)=> loader.load(resolve))
+	
+	objects.id_avatar.texture=loader.resources.my_avatar.texture;
+	
+	//получаем остальные данные об игроке
+	let _other_data = await fbs.ref('players/' + my_data.uid).once('value');
+	let other_data = _other_data.val();
+		
+	my_data.rating = (other_data && other_data.rating) || 0;
+	my_data.games = (other_data && other_data.games) || 0;
+	my_data.name = (other_data && other_data.name) || my_data.name;
+		
+
+	//устанавливаем рейтинг в попап
+	objects.id_record.text=my_data.rating;
+
+
+	//обновляем данные в файербейс так как могли поменяться имя или фото
+	fbs.ref('players/'+my_data.uid).set({name:my_data.name, pic_url: my_data.pic_url, rating : my_data.rating, games : my_data.games, tm:firebase.database.ServerValue.TIMESTAMP});
+
+	//устанавливаем мой статус в онлайн
+	//set_state({state : 'o'});
+
+
+	//это событие когда меняется видимость приложения
+	document.addEventListener("visibilitychange", vis_change);
+
+	//keep-alive сервис
+	fbs.ref('states/'+my_data.uid).onDisconnect().remove();
+	keep_alive();
+	setInterval(function()	{keep_alive()}, 60000);
+
+	//ждем и убираем попап
+	await new Promise((resolve, reject) => setTimeout(resolve, 1000));
+	
+	anim2.add(objects.id_cont,{y:[objects.id_cont.y, -200]}, false, 1,'easeInBack');
+	
+	some_process.loup_anim=function() {};
+		
+	main_menu.activate();
+	
+    //запускаем главный цикл
+    main_loop();
+}
+
+function load_resources() {
+	
+	//PIXI.Loader.registerPlugin(PIXI.gif.AnimatedGIFLoader);
+    game_res = new PIXI.Loader();
+		
+	//короткая ссылка на ресурсы
+	gres=game_res.resources;
+	
+	git_src="https://akukamil.github.io/melody/"
+	//git_src=""
+	
+
+	
+	game_res.add("m2_font", git_src+"/fonts/Neucha/font.fnt");
+
+	game_res.add('op_correct',git_src+'sounds/op_correct.mp3');
+	game_res.add('click',git_src+'sounds/click.mp3');
+	game_res.add('close',git_src+'sounds/close.mp3');
+	game_res.add('lose',git_src+'sounds/lose.mp3');
+	game_res.add('locked',git_src+'sounds/locked.mp3');
+	game_res.add('applause',git_src+'sounds/applause.mp3');
+	game_res.add('wrong',git_src+'sounds/wrong.mp3');
+	game_res.add('timeout',git_src+'sounds/timeout.mp3');
+	game_res.add('op_win',git_src+'sounds/op_win.mp3');
+	game_res.add('keypress',git_src+'sounds/keypress.mp3');
+	
+    //добавляем из листа загрузки
+    for (var i = 0; i < load_list.length; i++) {
+		
+        if (load_list[i].class === "sprite" )
+            game_res.add(load_list[i].name, git_src+"res/RUS/" + load_list[i].name + "." +  load_list[i].image_format);		
+		
+        if (load_list[i].class === "image")
+            game_res.add(load_list[i].name, git_src+"res/RUS/" + load_list[i].name + "." +  load_list[i].image_format);
+	}
+
+		
+    game_res.load(init_game_env);
+    game_res.onProgress.add(progress);
+
+    function resize_screen() {
+        const vpw = window.innerWidth; // Width of the viewport
+        const vph = window.innerHeight; // Height of the viewport
+        let nvw; // New game width
+        let nvh; // New game height
+
+        if (vph / vpw < M_HEIGHT / M_WIDTH) {
+            nvh = vph;
+            nvw = (nvh * M_WIDTH) / M_HEIGHT;
+        } else {
+            nvw = vpw;
+            nvh = (nvw * M_HEIGHT) / M_WIDTH;
+        }
+        app.renderer.resize(nvw, nvh);
+        app.stage.scale.set(nvw / M_WIDTH, nvh / M_HEIGHT);
+    }
+
+    function progress(loader, resource) {
+
+        document.getElementById("m_bar").style.width = Math.round(loader.progress) + "%";
+    }
+
+}
+
+var now, then=Date.now(), elapsed,time_per_frame=1000/65;
+function main_loop() {
+
+	now = Date.now();
+	elapsed = now-then;
+	
+    if (elapsed > time_per_frame) {
+		
+		then = now;
+		
+		game_tick+=0.016666666;
+		anim2.process();
+		
+		//обрабатываем минипроцессы
+		for (let key in some_process)
+			some_process[key]();		
+		
+	}
+
+	//отображаем сцену
+	app.renderer.render(app.stage);		
+	requestAnimationFrame(main_loop);
+}
+
+var keep_alive = function() {
+	
+	fbs.ref('states/'+my_data.uid).set(firebase.database.ServerValue.TIMESTAMP);
+	
+}
+
 

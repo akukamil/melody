@@ -538,7 +538,7 @@ keyboard={
 			return;
 		}
 		
-		if(key==='V'){			
+		if(key==='V' && objects.keyboard_text.text.length>2){			
 			game.check_song();
 			objects.keyboard_text.text=''
 			return;

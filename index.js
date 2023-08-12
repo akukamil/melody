@@ -310,18 +310,20 @@ class player_card_class extends PIXI.Container {
 		
 		this.bcg=new PIXI.Sprite(gres.player_card_bcg.texture);
 		this.bcg.width=this.bcg.height=90;
+		this.bcg.x=this.bcg.y=-10;
 		
 		this.avatar=new PIXI.Sprite();
 		this.avatar.width=this.avatar.height=70;
-		this.avatar.x=this.avatar.y=10;
+
 				
 		this.frame=new PIXI.Sprite(gres.player_card_frame.texture);
 		this.frame.width=this.frame.height=90;
+		this.frame.x=this.frame.y=-10;
 
 		this.name=new PIXI.BitmapText('', {fontName: 'mfont', fontSize :30, align: 'center'});
 		this.name.anchor.set(0.5,0.5);
-		this.name.x=45;
-		this.name.y=100;
+		this.name.x=35;
+		this.name.y=90;
 		this.name.tint=0xFFFF00;
 		
 		this.visible=false;

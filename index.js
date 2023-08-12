@@ -538,8 +538,13 @@ keyboard={
 			return;
 		}
 		
-		if(key==='V' && objects.keyboard_text.text.length>2){			
-			game.check_song();
+		if(key==='V'){			
+		
+			if (objects.keyboard_text.text.length>2){
+				game.check_song();			
+				
+			}
+
 			objects.keyboard_text.text=''
 			return;
 		}		

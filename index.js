@@ -367,7 +367,6 @@ class chat_record_class extends PIXI.Container {
 		this.correct_bcg.y=-3;
 		
 		this.text=new PIXI.BitmapText('Николай: хорошая игра', {lineSpacing:50,fontName: 'mfont',fontSize:27}); 
-		this.text.maxWidth=290;
 		this.text.tint=0xFFFF00;
 		
 		this.name_text=new PIXI.BitmapText('Николай:', {fontName: 'mfont',fontSize: 27}); 

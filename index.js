@@ -1418,12 +1418,14 @@ game = {
 
 
 		//проверяем что нормально загрузилось
-		try {
-			this.song_sound=game.song_loader.resources.song.sound;
-			if(this.song_sound.duration<1){alert('Ошибка')}
-		} catch (error) {
-			alert('Ошибка');
-		}		
+		if(!this.song_loader.resources.song.sound){
+			alert('Какая-то ошибка при загрузке мелодии!')
+			return;
+		}
+
+		this.song_sound=game.song_loader.resources.song.sound;
+
+
 		
 		this.on=true;
 		this.started=true;

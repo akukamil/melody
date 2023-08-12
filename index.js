@@ -1220,6 +1220,7 @@ game = {
 		
 		
 		fbs.ref('game_event').off();
+		fbs.ref('song_variants').off();
 		fbs.ref('states').off();
 		if(this.song_sound && this.song_sound.isPlaying)
 			this.song_sound.stop();

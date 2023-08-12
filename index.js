@@ -1411,6 +1411,12 @@ game = {
 		if (objects.wait_game_start.visible)
 			objects.wait_game_start.visible=false;
 
+		if (!objects.first_rules.shown){
+			anim2.add(objects.first_rules,{x:[450, objects.first_rules.sx]}, false, 3.5,'easeBridge');			
+			objects.first_rules.shown=1;
+		}
+
+
 		//проверяем что нормально загрузилось
 		try {
 			this.song_sound=game.song_loader.resources.song.sound;

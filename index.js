@@ -1200,8 +1200,9 @@ game = {
 		
 		if (data.event==='variant'){
 			if (this.started){
-				const is_correct=data.song===songs_data[this.song_index].song.toUpperCase();				
-				messages.add(data.name,data.song,null,is_correct)
+				const is_correct=data.song===songs_data[this.song_index].song.toUpperCase();
+				const name=data.name.substr(0,7);
+				messages.add(name,data.song,null,is_correct)
 			}
 			console.log('variant');
 		}	

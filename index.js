@@ -353,11 +353,13 @@ class player_card_class extends PIXI.Container {
 		this.t_stat.text=p;
 	}
 	
-	change_place(place){
+	change_place(place,fast){
 		
 		this.place=place;
-		anim2.add(this,{x:[this.x, place*90+10]}, true, 0.25,'linear');			
-		
+		if(fast)
+			this.x=place*90+10
+		else
+			anim2.add(this,{x:[this.x, place*90+10]}, true, 0.25,'linear');			
 	}
 	
 }
@@ -1099,6 +1101,7 @@ game = {
 	fly_notes_time:0,
 	song_loader:new PIXI.Loader(),
 	on:false,
+	last_stat_data:0,
 	started:false,
 	skip_first_event:true,
 	
@@ -1321,8 +1324,11 @@ game = {
 			
 			await this.update_players_cache_data(uid);		
 			const pcard=objects.pcards[cnt];
+			
+			
 			pcard.visible=true;
 			pcard.uid=uid;
+			pcard.place=this.last_stat_data[uid]||0;
 			if (uid===my_data.uid)
 				pcard.name.tint=0xFFFF00
 			else
@@ -1333,6 +1339,8 @@ game = {
 			cnt++;
 			if(cnt===objects.pcards.length) return;
 		}
+		
+		this.recalc_places(this.last_stat_data,1);
 	
 		
 	},
@@ -1429,7 +1437,10 @@ game = {
 		
 	},
 		
-	recalc_places(data){
+	recalc_places(data,fast){
+		
+		//сохраняем данные
+		this.last_stat_data=data;
 		
 		let active_players=[];
 				
@@ -1443,7 +1454,6 @@ game = {
 						
 			if (pcard.visible)
 				active_players.push(pcard);				
-			
 		}
 
 
@@ -1454,8 +1464,9 @@ game = {
 			const player=active_players[i];
 			
 			if (player.place!==i){				
-				player.change_place(i);					
-				sound.play('whoosh');
+				player.change_place(i,fast);	
+				if(!fast)
+					sound.play('whoosh');
 			}
 		}
 

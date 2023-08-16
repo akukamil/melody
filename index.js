@@ -1012,7 +1012,10 @@ lb={
 
 main_menu = {
 		
-	activate(){
+	activate(new_player){
+		
+		if(new_player)
+			anim2.add(objects.rules_pic,{x:[-450, objects.rules_pic.sx]}, true, 0.2,'easeOutBack');
 		
 		anim2.add(objects.main_buttons_cont,{y:[800,objects.main_buttons_cont.sy]}, true, 0.5,'easeOutBack');	
 		anim2.add(objects.header0,{y:[-400,objects.header0.sy]}, true, 0.5,'easeOutBack');	
@@ -1799,7 +1802,7 @@ async function init_game_env() {
 	//получаем остальные данные об игроке
 	let _other_data = await fbs.ref('players/' + my_data.uid).once('value');
 	let other_data = _other_data.val();
-		
+	const new_player=(other_data===null||other_data===undefined);
 	my_data.rating = (other_data && other_data.rating) || 0;
 	my_data.games = (other_data && other_data.games) || 0;
 	my_data.name = (other_data && other_data.name) || my_data.name;
@@ -1831,7 +1834,7 @@ async function init_game_env() {
 	
 	some_process.loup_anim=function() {};
 		
-	main_menu.activate();
+	main_menu.activate(new_player);
 	
     //запускаем главный цикл
     main_loop();

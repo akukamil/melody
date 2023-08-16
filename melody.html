@@ -95,7 +95,13 @@
 		
 			players_table.innerHTML='';
 			var data=snapshot.val();
-			players_table.innerHTML	=JSON.stringify(data);
+			
+			let keys = '';
+			for (let key in data) {
+			  keys += key + '<br>';
+			}
+			players_table.innerHTML = keys;
+						
 
 		})
 	

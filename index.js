@@ -543,7 +543,7 @@ keyboard={
 		if(key==='V'){			
 		
 			if (objects.keyboard_text.text.length>2){
-				game.check_song();			
+				game.send_song_for_checking();			
 				
 			}
 
@@ -557,15 +557,9 @@ keyboard={
 }
 
 ad = {
-	
-	prv_show : -9999,
-		
+			
 	show : function() {
-		
-		if ((Date.now() - this.prv_show) < 100000 )
-			return false;
-		this.prv_show = Date.now();
-		
+				
 		if (game_platform==='YANDEX') {			
 			//показываем рекламу
 			window.ysdk.adv.showFullscreenAdv({
@@ -1076,11 +1070,16 @@ game = {
 	song_loader:new PIXI.Loader(),
 	on:false,
 	started:false,
-	events_on:false,
+	skip_first_event:true,
+	
+	new_song_event:null,
+	timeout_event:null,
+	winner_found_event:null,
+	
 		
 	async activate(){
 		
-		some_process.game=this.process.bind(game);
+		
 		objects.wait_game_start.visible=true;
 		anim2.add(objects.big_record_cont,{x:[-300, objects.big_record_cont.sx]}, true, 0.5,'easeOutBack');
 		anim2.add(objects.avatars_cont,{y:[-100, objects.avatars_cont.sy]}, true, 0.5,'easeOutBack');
@@ -1090,25 +1089,132 @@ game = {
 		objects.messages.forEach(m=>m.visible=false);
 		
 		//начинаем прослушку событий
-		fbs.ref('game_event').on('value',snapshot=>{			
-			if (game.events_on)
-				game.event(snapshot.val());		
-			game.events_on=true;
-		})
+		let skip1=true;
+		fbs.ref('game_event').on('value',snapshot=>{	
+		
+			if (skip1){
+				skip1=false;
+				return;
+			}
+			
+			const inc_data=snapshot.val();
+			if (inc_data.event==='new_song')
+				this.new_song_event=inc_data.data;
+			if (inc_data.event==='timeout')
+				this.timeout_event=1;			
+			if (inc_data.event==='winner_found')
+				this.winner_found_event=inc_data;
+			if (inc_data.event==='ad_break'){
+				ad.show();
+				messages.add('Админ','Рекламная пауза!',0x5555ff)
+			}
+			
+			console.log('EVENT:',inc_data);
+		});
 		
 		//начинаем прослушку сообщений
+		let skip2=true;
 		fbs.ref('song_variants').on('value',snapshot=>{			
-			game.event(snapshot.val());		
-		})
+			if (skip2){
+				skip2=false;
+				return;
+			}
+			game.song_variant_event(snapshot.val());		
+		});
 		
 		//обновление онлайн игроков
 		fbs.ref('states').on('value',snapshot=>{			
 			game.players_updated(snapshot.val());		
 		})
 		
+		//начинаем процессинг
+		this.process_wait_next_song(true);
 
 	},
 	
+	song_variant_event(data){
+		
+		const is_correct=data.song===songs_data[this.song_index].song.toUpperCase();
+		const name=data.name.substr(0,7);
+		messages.add(name,data.song,null,is_correct)
+
+	},
+	
+	clear_events(){
+		
+		this.new_song_event=null;
+		this.timeout_event=null;
+		this.winner_found_event=null;
+		
+	},	
+	
+	process_wait_next_song(init){
+		
+		if (init){
+			this.clear_events();
+			this.mute_song();
+			some_process.game=this.process_wait_next_song.bind(this);			
+			console.log('Активирован процесс: process_wait_next_song');			
+		}
+		
+		if (this.new_song_event){
+			this.song_index=this.new_song_event;	
+			this.load_and_play();
+			this.process_listening(1);			
+			this.new_song_event=null;
+		}
+	
+	},
+	
+	process_listening(init){
+		
+		if (init){
+			this.clear_events();
+			console.log('Активирован процесс: process_listening');
+			some_process.game=this.process_listening.bind(this);
+		}
+					
+		//вращаем пластинку
+		objects.big_record.rotation+=0.02;			
+		
+		//добавляем нотки для анимации
+		this.add_flying_notes();	
+			
+
+		objects.big_record_bcg.alpha=Math.abs(Math.sin(game_tick));	
+		const sec_play=(Date.now()-this.play_start)*0.001;
+		const b_width=450*(24-sec_play)/24;
+		objects.progress_bar.width=b_width;		
+		
+		if (this.timeout_event){
+
+			sound.play('timeout');
+			messages.add('Админ','Никто не угадал!',0x5555ff)
+			console.log('timeout');
+			this.process_wait_next_song(1);
+			this.timeout_event=null;
+			
+			
+		}
+		
+		if (this.winner_found_event){	
+
+			if (this.winner_found_event.data===my_data.uid){				
+				sound.play('applause');	
+				anim2.add(objects.hand,{x:[450, objects.hand.sx]}, false, 3,'easeBridge');
+				console.log('Вы угадали правильно');
+			}else{
+				sound.play('op_win');			
+			}
+		
+			this.process_wait_next_song(1);
+			this.winner_found_event=null;
+		}
+		
+		
+		
+	},
+			
 	async update_players_cache_data(uid){
 		if (players_cache[uid]){
 			if (!players_cache[uid].name){
@@ -1261,7 +1367,7 @@ game = {
 
 	},
 		
-	check_song(){
+	send_song_for_checking(){
 						
 		fbs.ref('song_variants').set({event:'variant',song:objects.keyboard_text.text,uid:my_data.uid,name:my_data.name,tm:Date.now()})
 		
@@ -1313,26 +1419,6 @@ game = {
 		if(this.song_sound && this.song_sound.isPlaying)
 			this.song_sound.stop();
 		
-	},
-	
-	process(){		
-			
-
-		if(this.song_sound && this.song_sound.isPlaying) {
-			
-			//вращаем пластинку
-			objects.big_record.rotation+=0.02;			
-			
-			//добавляем нотки для анимации
-			this.add_flying_notes();	
-			
-		}
-		
-		objects.big_record_bcg.alpha=Math.abs(Math.sin(game_tick));	
-		const sec_play=(Date.now()-this.play_start)*0.001;
-		const b_width=450*(24-sec_play)/24;
-		objects.progress_bar.width=b_width;
-
 	},
 		
 	async stop_song(res){
@@ -1433,8 +1519,6 @@ game = {
 		}
 
 		this.song_sound=game.song_loader.resources.song.sound;
-
-
 		
 		this.on=true;
 		this.started=true;
@@ -1521,7 +1605,7 @@ async function define_platform_and_language() {
 
 async function init_game_env() {
 	
-	
+	return;
 	//инициируем файербейс
 	if (firebase.apps.length===0) {
 		firebase.initializeApp({

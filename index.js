@@ -1025,7 +1025,7 @@ main_menu = {
 	
 	play_down() {
 
-		if(anim2.any_on()===true)
+		if(!objects.main_buttons_cont.ready)
 			return;
 
 		this.close();		
@@ -1470,7 +1470,6 @@ game = {
 				sound.play('whoosh');
 
 		}
-
 			
 	},
 		
@@ -1567,7 +1566,7 @@ game = {
 
 		//проверяем что нормально загрузилось
 		if(!this.song_loader.resources.song.sound){
-			alert('Какая-то ошибка при загрузке мелодии!')
+			messages.add('Админ','Ошибка при загрузке мелодии!',0x5555ff)
 			return;
 		}
 

@@ -1030,11 +1030,15 @@ main_menu = {
 	},
 	
 	rules_button_down(){
-		
-		
-		
-		
-		
+		if (anim2.any_on()) return;		
+		anim2.add(objects.rules_pic,{x:[-450, objects.rules_pic.sx]}, true, 0.2,'easeOutBack');
+	
+	},
+	
+	rules_ok_down(){
+		if (anim2.any_on()) return;		
+		anim2.add(objects.rules_pic,{x:[objects.rules_pic.x, 450]}, false, 0.2,'easeInBack');
+	
 	},
 	
 	lb_down(){

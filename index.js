@@ -926,14 +926,11 @@ lb={
 		
 		return;*/
 		
-			
-		
-		
-		let players=await fbs.ref("players").orderByChild('rating').limitToLast(25).once('value');
-		players=players.val();
-		
-
 				
+		
+		let players=await fbs.ref('players').orderByChild('rating').limitToLast(25).once('value');
+		players=players.val();
+						
 		objects.lb_1_cont.cacheAsBitmap  = false;
 		objects.lb_2_cont.cacheAsBitmap  = false;
 		objects.lb_3_cont.cacheAsBitmap  = false;	
@@ -1440,6 +1437,17 @@ game = {
 	recalc_places(data,fast){
 		
 		data=data||{};
+		
+		
+		//проверяем мой рекорд
+		if (data[my_data.uid]){
+			
+			if (data[my_data.uid]>my_data.rating){
+				my_data.rating=data[my_data.uid];
+				fbs.ref('players/'+my_data.ui+'/rating').set(my_data.rating);
+				messages.add('Админ','Поздравляю с новым рекордом!',0x5555ff)
+			}
+		}
 		
 		//сохраняем данные
 		this.last_stat_data=data;

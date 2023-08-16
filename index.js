@@ -1313,7 +1313,7 @@ game = {
 	async players_updated(players){
 		
 		if(!players) return;
-		console.log(players)
+		console.log('players_updated:',players)
 		uids=Object.keys(players);
 		
 		objects.t_players_online.text='Игроков\nонлайн: ' +uids.length;
@@ -1438,6 +1438,8 @@ game = {
 	},
 		
 	recalc_places(data,fast){
+		
+		data=data||{};
 		
 		//сохраняем данные
 		this.last_stat_data=data;
@@ -1828,8 +1830,8 @@ async function init_game_env() {
 function load_resources() {
 	
 	
-	document.body.innerHTML = '<span style="color: yellow; font-size: 24px;">ИГРА БУДЕТ ДОСТУПНА ЧУТЬ ПОЗЖЕ</span>';
-	return;
+	//document.body.innerHTML = '<span style="color: yellow; font-size: 24px;">ИГРА БУДЕТ ДОСТУПНА ЧУТЬ ПОЗЖЕ</span>';
+	//return;
 	
 	//PIXI.Loader.registerPlugin(PIXI.gif.AnimatedGIFLoader);
     game_res = new PIXI.Loader();

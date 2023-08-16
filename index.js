@@ -1605,7 +1605,7 @@ async function define_platform_and_language() {
 
 async function init_game_env() {
 	
-	return;
+
 	//инициируем файербейс
 	if (firebase.apps.length===0) {
 		firebase.initializeApp({
@@ -1775,6 +1775,10 @@ async function init_game_env() {
 }
 
 function load_resources() {
+	
+	
+	document.body.innerHTML = '<span style="color: yellow; font-size: 24px;">ИГРА БУДЕТ ДОСТУПНА ЧУТЬ ПОЗЖЕ</span>';
+	return;
 	
 	//PIXI.Loader.registerPlugin(PIXI.gif.AnimatedGIFLoader);
     game_res = new PIXI.Loader();

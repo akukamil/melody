@@ -308,6 +308,10 @@ class player_card_class extends PIXI.Container {
 		
 		super();
 		
+		this.stat=0;
+		this.place=0;
+		this.uid=0;
+		
 		this.bcg=new PIXI.Sprite(gres.player_card_bcg.texture);
 		this.bcg.width=this.bcg.height=90;
 		this.bcg.x=this.bcg.y=-10;
@@ -315,6 +319,18 @@ class player_card_class extends PIXI.Container {
 		this.avatar=new PIXI.Sprite();
 		this.avatar.width=this.avatar.height=70;
 
+		this.stat_bcg=new PIXI.Sprite(gres.player_card_stat_bcg.texture);
+		this.stat_bcg.width=60;
+		this.stat_bcg.height=60;
+		this.stat_bcg.x=30;
+		this.stat_bcg.y=30;
+		
+		this.t_stat=new PIXI.BitmapText('0', {fontName: 'mfont', fontSize :22, align: 'center'});
+		this.t_stat.x=60;
+		this.t_stat.y=60;
+		this.t_stat.tint=0x000000;
+		this.t_stat.anchor.set(0.5,0.5);
+				
 				
 		this.frame=new PIXI.Sprite(gres.player_card_frame.texture);
 		this.frame.width=this.frame.height=90;
@@ -328,9 +344,22 @@ class player_card_class extends PIXI.Container {
 		
 		this.visible=false;
 				
-		this.addChild(this.bcg,this.avatar,this.frame,this.name);
+		this.addChild(this.bcg,this.avatar,this.frame,this.name,this.stat_bcg, this.t_stat);
 		
 	}	
+	
+	set_stat(p){		
+		this.stat=p;
+		this.t_stat.text=p;
+	}
+	
+	change_place(place){
+		
+		this.place=place;
+		anim2.add(this,{x:[this.x, place*90+10]}, true, 0.25,'linear');			
+		
+	}
+	
 }
 
 class letter_class extends PIXI.Container{
@@ -636,7 +665,8 @@ ad = {
 function vis_change() {
 	
 	if (document.hidden===true)
-		break_to_main_menu();
+		game.mute_song();
+		
 	
 }
 
@@ -1075,9 +1105,8 @@ game = {
 	new_song_event:null,
 	timeout_event:null,
 	winner_found_event:null,
-	
-		
-	async activate(){
+			
+	activate(){
 		
 		
 		objects.wait_game_start.visible=true;
@@ -1096,7 +1125,10 @@ game = {
 				skip1=false;
 				return;
 			}
-			
+					
+			if (document.hidden)
+				return;
+					
 			const inc_data=snapshot.val();
 			if (inc_data.event==='new_song')
 				this.new_song_event=inc_data.data;
@@ -1108,8 +1140,11 @@ game = {
 				ad.show();
 				messages.add('Админ','Рекламная пауза!',0x5555ff)
 			}
-			
-			console.log('EVENT:',inc_data);
+			if (inc_data.event==='stat'){
+				console.log(inc_data.data)
+				this.recalc_places(inc_data.data);
+			}
+
 		});
 		
 		//начинаем прослушку сообщений
@@ -1131,7 +1166,7 @@ game = {
 		this.process_wait_next_song(true);
 
 	},
-	
+		
 	song_variant_event(data){
 		
 		const is_correct=data.song===songs_data[this.song_index].song.toUpperCase();
@@ -1163,6 +1198,14 @@ game = {
 			this.process_listening(1);			
 			this.new_song_event=null;
 		}
+		
+		if (objects.wait_game_start.visible){
+			objects.wait_game_start.y=objects.wait_game_start.sy+Math.abs(Math.sin(game_tick*2))*20;	
+		}
+		
+		
+		//подсветка
+		objects.big_record_bcg.alpha=Math.abs(Math.sin(game_tick));	
 	
 	},
 	
@@ -1277,9 +1320,16 @@ game = {
 		for (let uid of uids){
 			
 			await this.update_players_cache_data(uid);		
-			objects.pcards[cnt].visible=true;
-			make_text(objects.pcards[cnt].name,players_cache[uid].name,75);
-			this.load_avatar({uid:uid,tar_obj:objects.pcards[cnt].avatar})
+			const pcard=objects.pcards[cnt];
+			pcard.visible=true;
+			pcard.uid=uid;
+			if (uid===my_data.uid)
+				pcard.name.tint=0xFFFF00
+			else
+				pcard.name.tint=0xffffff
+			
+			make_text(pcard.name,players_cache[uid].name,75);
+			this.load_avatar({uid:uid,tar_obj:pcard.avatar})
 			cnt++;
 			if(cnt===objects.pcards.length) return;
 		}
@@ -1287,48 +1337,6 @@ game = {
 		
 	},
 	
-	event(data){		
-		
-		console.log(data);
-		if (data.event==='new_song'){			
-			this.song_index=data.data;
-			this.load_and_play();			
-		}	
-
-		if (data.event==='timeout'){		
-			if(this.song_sound)
-				this.song_sound.stop();	
-			this.on=false;
-			sound.play('timeout');
-			messages.add('Админ','Никто не угадал!',0x5555ff)
-			console.log('timeout');
-		}	
-		
-		if (data.event==='variant'){
-			if (this.started){
-				const is_correct=data.song===songs_data[this.song_index].song.toUpperCase();
-				const name=data.name.substr(0,7);
-				messages.add(name,data.song,null,is_correct)
-			}
-			console.log('variant');
-		}	
-		
-		if (data.event==='winner_found'){	
-			if(this.song_sound)
-				this.song_sound.stop();		
-			
-			if (data.data===my_data.uid){				
-				sound.play('applause');	
-				anim2.add(objects.hand,{x:[450, objects.hand.sx]}, false, 3,'easeBridge');
-				console.log('Вы угадали правильно');
-			}else{
-				sound.play('op_win');			
-			}
-			this.on=false;
-			console.log('winner_found',data.data);
-		}	
-	},
-		
 	close(){
 		
 		
@@ -1419,6 +1427,39 @@ game = {
 		if(this.song_sound && this.song_sound.isPlaying)
 			this.song_sound.stop();
 		
+	},
+		
+	recalc_places(data){
+		
+		let active_players=[];
+				
+		//сортируем по найденым очкам (по убывания очков)
+		for (let pcard of objects.pcards){
+			const stat=data[pcard.uid];
+			if (stat)
+				pcard.set_stat(stat);
+			else
+				pcard.set_stat(0);
+						
+			if (pcard.visible)
+				active_players.push(pcard);				
+			
+		}
+
+
+		active_players=active_players.sort((a,b) =>  b.stat - a.stat)
+		
+		for(let i=0;i<active_players.length;i++){
+			
+			const player=active_players[i];
+			
+			if (player.place!==i){				
+				player.change_place(i);					
+				sound.play('whoosh');
+			}
+		}
+
+			
 	},
 		
 	async stop_song(res){
@@ -1519,6 +1560,7 @@ game = {
 		}
 
 		this.song_sound=game.song_loader.resources.song.sound;
+		this.song_sound.loop=true;
 		
 		this.on=true;
 		this.started=true;
@@ -1548,8 +1590,6 @@ function break_to_main_menu(){
 	
 	game.close();
 	main_menu.activate();
-	
-	
 	
 	
 }
@@ -1777,8 +1817,8 @@ async function init_game_env() {
 function load_resources() {
 	
 	
-	document.body.innerHTML = '<span style="color: yellow; font-size: 24px;">ИГРА БУДЕТ ДОСТУПНА ЧУТЬ ПОЗЖЕ</span>';
-	return;
+	//document.body.innerHTML = '<span style="color: yellow; font-size: 24px;">ИГРА БУДЕТ ДОСТУПНА ЧУТЬ ПОЗЖЕ</span>';
+	//return;
 	
 	//PIXI.Loader.registerPlugin(PIXI.gif.AnimatedGIFLoader);
     game_res = new PIXI.Loader();
@@ -1803,6 +1843,7 @@ function load_resources() {
 	game_res.add('timeout',git_src+'sounds/timeout.mp3');
 	game_res.add('op_win',git_src+'sounds/op_win.mp3');
 	game_res.add('keypress',git_src+'sounds/keypress.mp3');
+	game_res.add('whoosh',git_src+'sounds/whoosh.mp3');
 	
     //добавляем из листа загрузки
     for (var i = 0; i < load_list.length; i++) {

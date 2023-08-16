@@ -1464,12 +1464,11 @@ game = {
 		for(let i=0;i<active_players.length;i++){
 			
 			const player=active_players[i];
-			
-			if (player.place!==i){				
-				player.change_place(i,fast);	
-				if(!fast)
-					sound.play('whoosh');
-			}
+					
+			player.change_place(i,fast);	
+			if(!fast)
+				sound.play('whoosh');
+
 		}
 
 			

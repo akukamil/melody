@@ -1448,7 +1448,7 @@ game = {
 			
 			if (data[my_data.uid]>my_data.rating){
 				my_data.rating=data[my_data.uid];
-				fbs.ref('players/'+my_data.ui+'/rating').set(my_data.rating);
+				fbs.ref('players/'+my_data.uid+'/rating').set(my_data.rating);
 				messages.add('Админ','Поздравляю с новым рекордом!',0x5555ff)
 			}
 		}

@@ -589,8 +589,12 @@ keyboard={
 
 ad = {
 			
-	show : function() {
+	async show() {
 				
+				
+		messages.add('Админ','Рекламная пауза!',0x5555ff)
+		await new Promise(resolve => setTimeout(resolve, 1000));
+		
 		if (game_platform==='YANDEX') {			
 			//показываем рекламу
 			window.ysdk.adv.showFullscreenAdv({
@@ -1147,7 +1151,7 @@ game = {
 				this.winner_found_event=inc_data;
 			if (inc_data.event==='ad_break'){
 				ad.show();
-				messages.add('Админ','Рекламная пауза!',0x5555ff)
+				
 			}
 			if (inc_data.event==='stat'){
 				console.log(inc_data.data)

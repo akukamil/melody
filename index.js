@@ -1111,6 +1111,7 @@ game = {
 	fly_notes_time:0,
 	song_loader:new PIXI.Loader(),
 	on:false,
+	cur_rating:0,
 	last_stat_data:0,
 	started:false,
 	skip_first_event:true,
@@ -1454,7 +1455,7 @@ game = {
 		
 		//проверяем мой рекорд
 		if (data[my_data.uid]){
-			
+			this.cur_rating=data[my_data.uid];
 			if (data[my_data.uid]>my_data.rating){
 				my_data.rating=data[my_data.uid];
 				fbs.ref('players/'+my_data.uid+'/rating').set(my_data.rating);
@@ -1603,7 +1604,7 @@ game = {
 		this.fly_notes_time=Date.now()+1000;
 		
 		//подсказка
-		if(my_data.rating<5){
+		if(this.cur_rating<5){
 			
 			const first_letter=songs_data[this.song_index].song[0].toUpperCase()
 			messages.add('Админ','Подсказка! Первая буква - '+first_letter,0x5555ff)

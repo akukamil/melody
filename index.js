@@ -1601,6 +1601,13 @@ game = {
 		
 		this.play_start=Date.now();
 		this.fly_notes_time=Date.now()+1000;
+		
+		//подсказка
+		if(my_data.rating<5){
+			
+			const first_letter=songs_data[this.song_index].song[0].toUpperCase()
+			messages.add('Админ','Подсказка! Первая буква - '+first_letter,0x5555ff)
+		}
 						
 		keyboard.open();
 		

@@ -1151,8 +1151,7 @@ game = {
 			if (inc_data.event==='winner_found')
 				this.winner_found_event=inc_data;
 			if (inc_data.event==='ad_break'){
-				ad.show();
-				
+				ad.show();				
 			}
 			if (inc_data.event==='stat'){
 				console.log(inc_data.data)
@@ -1677,7 +1676,7 @@ async function define_platform_and_language() {
 	}	
 	
 	game_platform = 'UNKNOWN';	
-	LANG = await language_dialog.show();
+	LANG = 0;
 	
 	
 

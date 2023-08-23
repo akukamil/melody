@@ -1111,6 +1111,7 @@ game = {
 	fly_notes_time:0,
 	song_loader:new PIXI.Loader(),
 	on:false,
+	state:'',
 	cur_rating:0,
 	last_stat_data:0,
 	started:false,
@@ -1201,6 +1202,7 @@ game = {
 		if (init){
 			this.clear_events();
 			this.mute_song();
+			this.state='wait_next_song';
 			some_process.game=this.process_wait_next_song.bind(this);			
 			console.log('Активирован процесс: process_wait_next_song');			
 		}
@@ -1225,6 +1227,7 @@ game = {
 	process_listening(init){
 		
 		if (init){
+			this.state='listening';
 			this.clear_events();
 			console.log('Активирован процесс: process_listening');
 			some_process.game=this.process_listening.bind(this);
@@ -1549,7 +1552,7 @@ game = {
 	
 	record_down(){
 		
-		if(this.song_sound && !this.song_sound.isPlaying && this.on){
+		if(this.song_sound && !this.song_sound.isPlaying && this.state==='listening'){
 			this.song_instance=sound.play('song',game.song_loader);	
 			//this.song_instance.on('end',function(){});
 		}		

@@ -54,16 +54,14 @@
 	firebase.initializeApp(firebaseConfig);
 	firebase.analytics();
 	
-
 	main();
 	
 	async function main () {
 	
 		await load_for_clearing_old();
-		show_last();
+		show_stat();
 	
-	}
-	
+	}	
 	
 	async function load_for_clearing_old() {
 	
@@ -86,34 +84,26 @@
 		})
 		alert("Total removed: "+total_removed);
 
-
 	}
 	
-	async function show_last() {
+	async function show_stat() {
 	
-		firebase.database().ref('states').on('value',(snapshot) => {
 		
-			players_table.innerHTML='';
-			var data=snapshot.val();
-			
-			let keys = '';
-			for (let key in data) {
-			  keys += key + '<br>';
-			}
-			players_table.innerHTML = keys;
-						
-
-		})
-	
+		let str='';
+		let data=await 	firebase.database().ref('room1/players').once('value')
+		data=data.val()
+		str+='Комната1:<br />'
+		for (let key in data)
+			str+=(key+'<br />');
+		
+		data=await 	firebase.database().ref('room2/players').once('value')
+		data=data.val()
+		str+='<br />Комната2:<br />'
+		for (let key in data)
+			str+=(key+'<br />');
+		document.body.innerHTML=str;
+		
 	}
-	
-
-
-		
-	
-	
-
-
 		
 </script>
 

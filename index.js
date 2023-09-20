@@ -357,8 +357,10 @@ class player_card_class extends PIXI.Container {
 	}	
 	
 	set_stat(p){		
+		this.cacheAsBitmap=false;
 		this.stat=p;
 		this.t_stat.text=p;
+		this.cacheAsBitmap=true;
 	}
 	
 	change_place(place,fast){
@@ -1164,9 +1166,7 @@ game = {
 		
 		this.room=room;
 		
-		await this.update_songs(room);
-
-		
+		await this.update_songs(room);		
 		
 		objects.wait_game_start.visible=true;
 		anim2.add(objects.big_record_cont,{x:[-300, objects.big_record_cont.sx]}, true, 0.5,'easeOutBack');
@@ -1205,8 +1205,7 @@ game = {
 			}
 
 		});
-			
-		
+					
 		//обновление онлайн игроков
 		fbs.ref(this.room+'/players').on('value',snapshot=>{			
 			game.players_updated(snapshot.val());		

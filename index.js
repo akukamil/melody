@@ -320,9 +320,13 @@ class player_card_class extends PIXI.Container {
 		this.bcg.x=this.bcg.y=-10;
 		
 		this.avatar_mask=new PIXI.Sprite(gres.avatar_mask.texture);
+		this.avatar_mask.width=this.avatar.height=90;
+		this.avatar_mask.x=this.avatar_mask.y=-10;	
 		
 		this.avatar=new PIXI.Sprite();
 		this.avatar.width=this.avatar.height=70;
+		
+		
 		this.avatar.mask=this.avatar_mask;
 
 

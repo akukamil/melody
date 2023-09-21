@@ -1193,7 +1193,7 @@ game = {
 				return;					
 
 			if (inc_data.type==='new_song')
-				this.new_song_event=[inc_data.song_index.inc_data.part];
+				this.new_song_event=[inc_data.song_index,inc_data.part];
 			if (inc_data.type==='timeout')
 				this.timeout_event=1;		
 			if (inc_data.type==='song')

@@ -1215,6 +1215,8 @@ game = {
 		//добавляем мои данные в базу данных
 		this.keep_alive_timer=setInterval(game.keep_me_alive.bind(game),30000);		
 		this.keep_me_alive();
+		
+		fbs.ref(this.room+'/players/'+my_data.uid).onDisconnect().remove();
 				
 		//начинаем процессинг
 		this.process_wait_next_song(true);
@@ -1223,7 +1225,6 @@ game = {
 	
 	keep_me_alive(){
 		
-		console.log('keep_alive updated')
 		fbs.ref(this.room+'/players/'+my_data.uid).set(firebase.database.ServerValue.TIMESTAMP);
 		
 	},

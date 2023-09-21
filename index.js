@@ -324,11 +324,9 @@ class player_card_class extends PIXI.Container {
 		this.avatar_mask.x=this.avatar_mask.y=-10;	
 		
 		this.avatar=new PIXI.Sprite();
-		this.avatar.width=this.avatar.height=70;
-		
+		this.avatar.width=this.avatar.height=70;		
 		
 		this.avatar.mask=this.avatar_mask;
-
 
 		this.stat_bcg=new PIXI.Sprite(gres.player_card_stat_bcg.texture);
 		this.stat_bcg.width=60;
@@ -340,9 +338,7 @@ class player_card_class extends PIXI.Container {
 		this.t_stat.x=60;
 		this.t_stat.y=60;
 		this.t_stat.tint=0x000000;
-		this.t_stat.anchor.set(0.5,0.5);
-				
-		
+		this.t_stat.anchor.set(0.5,0.5);		
 				
 		this.frame=new PIXI.Sprite(gres.player_card_frame.texture);
 		this.frame.width=this.frame.height=90;
@@ -1124,6 +1120,7 @@ game = {
 	song_instance:0,
 	song_sound:null,
 	song_index:0,
+	song_part:0,
 	song_name:'',
 	song_obj:{},
 	play_start:0,
@@ -1196,7 +1193,7 @@ game = {
 				return;					
 
 			if (inc_data.type==='new_song')
-				this.new_song_event=inc_data.song_index;
+				this.new_song_event=[inc_data.song_index.inc_data.part];
 			if (inc_data.type==='timeout')
 				this.timeout_event=1;		
 			if (inc_data.type==='song')
@@ -1261,13 +1258,14 @@ game = {
 		}
 		
 		if (this.new_song_event!==null){
-			this.song_index=this.new_song_event;
+			this.song_index=this.new_song_event[0];
+			this.song_part=this.new_song_event[1];
 			const lang=room_to_lang[this.room];
 
 			const[band,song]=this.songs[lang][this.song_index].split('-');
 			this.song_name=song.toUpperCase().replace(/_/g, ' ');
 			objects.band_name.text=band.replace(/_/g, ' ');
-			if (Math.random()>0.9)
+			if (Math.random()>0.8)
 				anim2.add(objects.band_name,{alpha:[0,1]}, false, 5,'easeBridge');
 			
 			
@@ -1566,7 +1564,7 @@ game = {
 	async load_and_play(){
 		
 		
-		const song_path='https://akukamil.github.io/melody/'+room_to_path[this.room]+'/'+this.song_index+'_'+irnd(0,2)+'.mp3';
+		const song_path='https://akukamil.github.io/melody/'+room_to_path[this.room]+'/'+this.song_index+'_'+this.song_part+'.mp3';
 		
 		this.song_loader.destroy();		
 		this.song_loader.add('song', song_path,{timeout: 5000});	

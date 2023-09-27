@@ -403,7 +403,7 @@ class chat_record_class extends PIXI.Container {
 	constructor() {
 		
 		super();
-		
+	
 		this.correct_bcg=new PIXI.Sprite(gres.correct_bcg.texture);
 		this.correct_bcg.scale_xy=0.45;
 		this.correct_bcg.x=-10;
@@ -414,12 +414,17 @@ class chat_record_class extends PIXI.Container {
 		
 		this.name_text=new PIXI.BitmapText('Николай:', {fontName: 'mfont',fontSize: 27}); 
 		this.name_text.tint=0xFFFFFF;
-				
-		this.addChild(this.correct_bcg,this.text,this.name_text)
+		
+		this.winner_icon=new PIXI.Sprite(gres.winner_icon.texture);
+		this.winner_icon.scale_xy=0.9;
+		this.winner_icon.y=-2;
+		this.winner_icon.tint=0xffbb44;
+		
+		this.addChild(this.correct_bcg,this.text,this.name_text,this.winner_icon)
 		
 	}
 	
-	set(name, text,color_name,color_text,is_correct){
+	set(name,text,color_name,color_text,is_correct,is_winner){
 		
 		this.correct_bcg.visible=is_correct;
 		
@@ -428,6 +433,14 @@ class chat_record_class extends PIXI.Container {
 		
 		this.text.tint=color_text||0xFFFFFF;
 		this.name_text.tint=color_name||0xFFFFFF;	
+		
+		if(is_winner){
+			this.winner_icon.visible=true;
+			this.winner_icon.x=this.text.x+this.text.width;
+		}else{
+			this.winner_icon.visible=false;
+		}
+		
 	}	
 	
 	
@@ -1083,7 +1096,7 @@ messages={
 	bottom:565,
 	cont_total_shift:0,
 	
-	add(name,text,is_correct){
+	add(name,text,is_correct,is_winner){
 		
 		let color_name=0xffffff;
 		let color_text=0xffff00;
@@ -1095,7 +1108,7 @@ messages={
 		
 		const oldest=this.get_old_message();
 		oldest.y=this.bottom;
-		oldest.set(name,text,color_name,color_text,is_correct||0);
+		oldest.set(name,text,color_name,color_text,is_correct||0,is_winner||0);
 		oldest.visible=true;
 		this.bottom+=25;
 		this.cont_total_shift-=25;
@@ -1229,14 +1242,15 @@ game = {
 		
 	},
 		
-	song_variant_event(uid,song,winner){
+	song_variant_event(uid,song,is_winner){
 		
-		console.log(uid,song,winner)
-		if (winner) this.winner_found_event=uid;
+		console.log(uid,song,is_winner)
+		if (is_winner) this.winner_found_event=uid;
 		
 		const is_correct=song===this.song_name;
 		const name=players_cache[uid].name.substr(0,7);
-		messages.add(name,song,is_correct)
+		
+		messages.add(name,song,is_correct,is_winner)
 
 	},
 	
@@ -1310,7 +1324,7 @@ game = {
 		if (this.timeout_event){
 
 			sound.play('timeout');
-			messages.add('Админ','Никто не угадал!',0,0x5555ff)
+			messages.add('Админ','Никто не угадал!')
 			console.log('timeout');
 			this.process_wait_next_song(1);
 			this.timeout_event=null;

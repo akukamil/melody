@@ -1109,7 +1109,6 @@ game = {
 	song_index:0,
 	song_part:0,
 	song_name:'',
-	song_obj:{},
 	play_start:0,
 	fly_notes_time:0,
 	song_loader:new PIXI.Loader(),

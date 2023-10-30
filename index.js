@@ -1128,7 +1128,7 @@ game = {
 				
 	async activate(room){
 		
-		this.room='room3';
+		this.room='room1';
 		
 		objects.wait_game_start.visible=true;
 		anim2.add(objects.big_record_cont,{x:[-300, objects.big_record_cont.sx]}, true, 0.5,'easeOutBack');

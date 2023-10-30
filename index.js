@@ -941,7 +941,12 @@ lb={
 		if (pic_url==='https://vk.com/images/camera_100.png')
 			pic_url = 'https://i.ibb.co/fpZ8tg2/vk.jpg';	
 		
-		let tex=await PIXI.Texture.fromURL(pic_url);
+		let tex=PIXI.Texture.WHITE;
+		try{			
+			tex=await PIXI.Texture.fromURL(pic_url);
+		}catch(e){
+			console.log(e);
+		}
 		tar_obj.texture=tex;
 		if (index<3)
 			tar_obj.parent.cacheAsBitmap=true;
@@ -1224,11 +1229,12 @@ game = {
 			this.song_part=this.new_song_event[1];
 
  			this.song_name=SONGS[this.song_index][1];
+			objects.t_hint.tint=0x33ff55;
 			objects.t_hint.text=SONGS[this.song_index][0];
 			anim2.add(objects.t_hint,{alpha:[0,1]}, false, 5,'easeBridge');
 			
 			
-			console.log('Занадана песня с индексом: ',this.song_index,this.song_name);			
+			//console.log('Занадана песня с индексом: ',this.song_index,this.song_name);			
 			this.load_and_play();
 			this.process_listening(1);			
 			this.new_song_event=null;
@@ -1271,6 +1277,7 @@ game = {
 			messages.add('Админ','Никто не угадал!')
 			
 			objects.t_hint.text=this.song_name;
+			objects.t_hint.tint=0xff0000;
 			anim2.add(objects.t_hint,{alpha:[0,1]}, false, 5,'easeBridge');
 			console.log('timeout');
 			this.process_wait_next_song(1);

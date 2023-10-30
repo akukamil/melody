@@ -1,8 +1,5 @@
 var M_WIDTH = 450, M_HEIGHT = 800, game_platform='', app ={stage:{},renderer:{}}, gres, objects = {}, my_data = {}, game_tick = 0, state ="",git_src='';
-var some_process = {}, my_choose=false,fbs, hidden_state_start=0, players_cache={};
-
-const room_to_path={room1:'songs/ru',room2:'songs/en'}
-const room_to_lang={room1:'ru',room2:'en'};
+var some_process = {}, my_choose=false,fbs, hidden_state_start=0, players_cache={},SONGS;
 
 rnd2=function(min,max) {	
 	let r=Math.random() * (max - min) + min
@@ -508,19 +505,8 @@ keyboard={
 	p_resolve : 0,
 	//x,y,x2,y2
 	ru_keys :[[23,124,70,164,'<'],[23,30,53.58,70,'Й'],[60.58,30,91.16,70,'Ц'],[98.17,30,128.75,70,'У'],[135.75,30,166.33,70,'К'],[173.33,30,203.91,70,'Е'],[210.92,30,241.5,70,'Н'],[248.5,30,279.08,70,'Г'],[286.08,30,316.66,70,'Ш'],[323.67,30,354.25,70,'Щ'],[361.25,30,391.83,70,'З'],[398.83,30,429.41,70,'Х'],[436.42,30,467,70,'Ъ'],[23,77,57,117,'Ф'],[64,77,98,117,'Ы'],[105,77,139,117,'В'],[146,77,180,117,'А'],[187,77,221,117,'П'],[228,77,262,117,'Р'],[269,77,303,117,'О'],[310,77,344,117,'Л'],[351,77,385,117,'Д'],[392,77,426,117,'Ж'],[433,77,467,117,'Э'],[77,124,108.11,164,'Я'],[115.11,124,146.22,164,'Ч'],[153.22,124,184.33,164,'С'],[191.33,124,222.44,164,'М'],[229.44,124,260.55,164,'И'],[267.56,124,298.67,164,'Т'],[305.67,124,336.78,164,'Ь'],[343.78,124,374.89,164,'Б'],[381.89,124,413,164,'Ю'],[420,124,467,164,'OK'],[140,171,350,211,' ']],
-	en_keys:[[24,124,71,164,'<'],[23,30,61.1,70,'Q'],[68.1,30,106.2,70,'W'],[113.2,30,151.3,70,'E'],[158.3,30,196.4,70,'R'],[203.4,30,241.5,70,'T'],[248.5,30,286.6,70,'Y'],[293.6,30,331.7,70,'U'],[338.7,30,376.8,70,'I'],[383.8,30,421.9,70,'O'],[428.9,30,467,70,'P'],[45,77,83.22,117,'A'],[90.22,77,128.44,117,'S'],[135.44,77,173.66,117,'D'],[180.67,77,218.89,117,'F'],[225.89,77,264.11,117,'G'],[271.11,77,309.33,117,'H'],[316.33,77,354.55,117,'J'],[361.56,77,399.78,117,'K'],[406.78,77,445,117,'L'],[78,124,119.71,164,'Z'],[126.71,124,168.42,164,'X'],[175.43,124,217.14,164,'C'],[224.14,124,265.85,164,'V'],[272.86,124,314.57,164,'B'],[321.57,124,363.28,164,'N'],[370.29,124,412,164,'M'],[419,124,466,164,'OK'],[140,171,360,211,' ']],
-	keys_data:null,
-	
-	open(){		
 		
-		const lang_to_texture={ru:gres.keyboard_ru.texture,en:gres.keyboard_en.texture}
-		const lang_to_keys={ru:this.ru_keys,en:this.en_keys}
-		
-		const lang=room_to_lang[game.room]
-		
-		objects.keyboard.texture=lang_to_texture[lang];
-		
-		this.keys_data=lang_to_keys[lang];
+	open(){
 		
 		anim2.add(objects.keyboard_cont,{y:[950, objects.keyboard_cont.sy]}, true, 1,'linear');
 		
@@ -541,7 +527,7 @@ keyboard={
 		if(key==='BACKSPACE') key ='<';
 		if(key==='ENTER') key ='OK';
 			
-		var key2 = this.keys_data.find(k => {return k[4] === key})			
+		var key2 = this.ru_keys.find(k => {return k[4] === key})			
 				
 		this.process_key(key2)
 		
@@ -555,7 +541,7 @@ keyboard={
 				
 		//ищем попадание нажатия на кнопку
 		let margin = 5;
-		for (let k of this.keys_data)	
+		for (let k of this.ru_keys)	
 			if (mx > k[0] - margin && mx <k[2] + margin  && my > k[1] - margin && my < k[3] + margin)
 				return k;
 		return null;
@@ -1029,7 +1015,6 @@ main_menu = {
 		
 		anim2.add(objects.title,{scale_x:[0,0.6666]}, true, 0.5,'easeOutBack');
 		anim2.add(objects.play_russian,{x:[-450,objects.play_russian.sx]}, true, 0.5,'easeOutBack');	
-		anim2.add(objects.play_other,{x:[450,objects.play_other.sx]}, true, 0.5,'easeOutBack');	
 		objects.bcg.tint=0xffffff;
 		
 		some_process.main_menu=this.process.bind(this);
@@ -1131,7 +1116,6 @@ game = {
 	on:false,
 	state:'',
 	room:'room1',
-	songs:{},
 	cur_rating:0,
 	last_stat_data:0,
 	started:false,
@@ -1141,35 +1125,10 @@ game = {
 	new_song_event:null,
 	timeout_event:null,
 	winner_found_event:null,
-	
-	async update_songs(room){
-		
-		const lang=room_to_lang[room];
-		
-		if (this.songs?.[lang])
-			return;
-		
-		let data=await fbs.ref(room_to_path[room]).once('value');
-		if(!data){
-			alert('Не получилось загрузить песни!!!')
-			return;			
-		}
-		
-		data=data.val();
-		if(data.length<100){
-			alert('Неправильный список песен!!!')
-			return;			
-		}
-		
-		this.songs[lang]=data;
-		
-	},
-			
+				
 	async activate(room){
 		
-		this.room=room;
-		
-		await this.update_songs(room);		
+		this.room='room3';
 		
 		objects.wait_game_start.visible=true;
 		anim2.add(objects.big_record_cont,{x:[-300, objects.big_record_cont.sx]}, true, 0.5,'easeOutBack');
@@ -1264,13 +1223,10 @@ game = {
 		if (this.new_song_event!==null){
 			this.song_index=this.new_song_event[0];
 			this.song_part=this.new_song_event[1];
-			const lang=room_to_lang[this.room];
 
-			const[band,song]=this.songs[lang][this.song_index].split('-');
-			this.song_name=song.toUpperCase().replace(/_/g, ' ');
-			objects.band_name.text=band.replace(/_/g, ' ');
-			if (Math.random()>0.8)
-				anim2.add(objects.band_name,{alpha:[0,1]}, false, 5,'easeBridge');
+ 			this.song_name=SONGS[this.song_index][1];
+			objects.t_hint.text=SONGS[this.song_index][0];
+			anim2.add(objects.t_hint,{alpha:[0,1]}, false, 5,'easeBridge');
 			
 			
 			console.log('Занадана песня с индексом: ',this.song_index,this.song_name);			
@@ -1314,6 +1270,9 @@ game = {
 
 			sound.play('timeout');
 			messages.add('Админ','Никто не угадал!')
+			
+			objects.t_hint.text=this.song_name;
+			anim2.add(objects.t_hint,{alpha:[0,1]}, false, 5,'easeBridge');
 			console.log('timeout');
 			this.process_wait_next_song(1);
 			this.timeout_event=null;
@@ -1445,7 +1404,7 @@ game = {
 		objects.progress_bar.visible=false;
 		objects.close_game.visible=false;
 		objects.hand.visible=false;
-		objects.band_name.visible=false;
+		objects.t_hint.visible=false;
 		objects.t_players_online.visible=false;
 		objects.keyboard_cont.visible=false;
 		objects.messages_cont.visible=false;
@@ -1568,7 +1527,7 @@ game = {
 	async load_and_play(){
 		
 		
-		const song_path='https://akukamil.github.io/melody/'+room_to_path[this.room]+'/'+this.song_index+'_'+this.song_part+'.mp3';
+		const song_path='https://akukamil.github.io/melody/songs/ru/'+this.song_index+'_'+this.song_part+'.mp3';
 		
 		this.song_loader.destroy();		
 		this.song_loader.add('song', song_path,{timeout: 5000});	
@@ -1618,6 +1577,24 @@ game = {
 		objects.progress_bar.width=450;
 	}
 	
+	
+}
+
+async function load_songs(){
+	
+	try {
+	  const response = await fetch('https://akukamil.github.io/melody/rusongs.txt');
+	  if (!response.ok) throw new Error('Error fetching data');
+	  const text_data = await response.text();
+	  _q=JSON.parse(text_data);
+	  if (Array.isArray(_q)&&_q.length>100){
+		  SONGS=_q;
+		  console.log('Песни обновлены: ',SONGS.length)
+	  }
+
+	} catch (error) {
+	  console.error('Error:', error.message);
+	}
 	
 }
 
@@ -1680,7 +1657,6 @@ async function define_platform_and_language() {
 
 async function init_game_env() {
 	
-
 	//инициируем файербейс
 	if (firebase.apps.length===0) {
 		firebase.initializeApp({
@@ -1693,8 +1669,7 @@ async function init_game_env() {
 			appId: "1:950545734258:web:bddf99bf8907891702c0eb"
 		});
 	}	
-	
-	
+		
 	//короткое образ
 	fbs=firebase.database();
 			
@@ -1728,8 +1703,6 @@ async function init_game_env() {
         app.stage.scale.set(nvw / M_WIDTH, nvh / M_HEIGHT);
     }
 	
-	//загружаем список песен
-	await auth2.load_script(git_src+'/songs.txt');
 
     resize();
     window.addEventListener("resize", resize);
@@ -1789,9 +1762,7 @@ async function init_game_env() {
         }
     }
 			
-	ad.prv_show = Date.now();
-			
-			
+	ad.prv_show = Date.now();				
 			
 	//анимация лупы
 	some_process.loup_anim=function() {
@@ -1804,7 +1775,6 @@ async function init_game_env() {
 		
 	//устанавлием имя на карточки
 	make_text(objects.id_name,my_data.name,150);
-
 		
 	//ждем пока загрузится аватар
 	let loader=new PIXI.Loader();
@@ -1829,6 +1799,9 @@ async function init_game_env() {
 
 	//устанавливаем мой статус в онлайн
 	//set_state({state : 'o'});
+	
+	//загружаем слова
+	await load_songs();
 
 	//это событие когда меняется видимость приложения
 	document.addEventListener("visibilitychange", vis_change);

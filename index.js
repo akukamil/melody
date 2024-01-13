@@ -1795,7 +1795,7 @@ async function init_game_env() {
 	const new_player=(other_data===null||other_data===undefined);
 	my_data.rating = (other_data && other_data.rating) || 0;
 	my_data.games = (other_data && other_data.games) || 0;
-	my_data.name = (other_data && other_data.name) || my_data.name;
+	my_data.name = my_data.name||(other_data && other_data.name);
 		
 	//устанавливаем рейтинг в попап
 	objects.id_record.text=my_data.rating;

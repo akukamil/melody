@@ -1309,6 +1309,8 @@ game = {
 			if (!players_cache[uid].name){
 				let t=await fbs.ref('players/' + uid + '/name').once('value');
 				players_cache[uid].name=t.val()||'***';
+				players_cache[uid].name = players_cache[uid].name.replace("ё", "е");
+				players_cache[uid].name = players_cache[uid].name.replace("Ё", "Е");
 			}
 							
 			if (!players_cache[uid].pic_url){
@@ -1322,6 +1324,8 @@ game = {
 			let t=await fbs.ref('players/' + uid).once('value');
 			t=t.val();
 			players_cache[uid].name=t.name||'***';
+			players_cache[uid].name = players_cache[uid].name.replace("ё", "е");
+			players_cache[uid].name = players_cache[uid].name.replace("Ё", "Е");
 			players_cache[uid].pic_url=t.pic_url||'';
 		}		
 	},
@@ -1359,7 +1363,7 @@ game = {
 	async players_updated(players){
 		
 		if(!players) return;
-		console.log('players_updated:',players)
+		//console.log('players_updated:',players)
 		uids=Object.keys(players);
 		
 		objects.t_players_online.text='Игроков\nонлайн: ' +uids.length;
